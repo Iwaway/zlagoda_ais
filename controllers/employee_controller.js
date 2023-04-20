@@ -28,14 +28,12 @@ const getById = (request, response) => {
     })
 }
 
-const getByNumberAndAdress = (request, response) => {
+const getNumberAndAdress = (request, response) => {
     const {
-        phone_number,
-        city,
-        street
+        empl_surname,
     } = request.body
-    pool.query('SELECT * FROM employee WHERE phone_number = $1 AND city=$2 AND street=$3',
-    [phone_number, city, street], (error, results) => {
+    pool.query('SELECT phone_number, city, street FROM employee WHERE empl_surname = $1',
+    [empl_surname], (error, results) => {
         if (error) {
             throw error
         }
@@ -110,5 +108,5 @@ module.exports = {
     update,
     deleteById,
     getAllCashiers,
-    getByNumberAndAdress,
+    getNumberAndAdress,
 }

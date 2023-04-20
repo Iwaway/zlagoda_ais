@@ -25,7 +25,7 @@ routes.put('/employee/update/:id', employee_controller.update)
 routes.delete('/employee/delete/:id', employee_controller.deleteById)
 
 //За прізвищем працівника знайти його телефон та адресу
-routes.get('/employeeByNumberAndAdress', employee_controller.getByNumberAndAdress)
+routes.get('/employeeNumberAndAdress', employee_controller.getNumberAndAdress)
 
 
 
