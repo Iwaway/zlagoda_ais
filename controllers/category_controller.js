@@ -28,7 +28,7 @@ const create = (request, response) => {
         if (error) {
             throw error
         }
-        response.status(201).send(`Category added with ID: ${id_employee}`)
+        response.status(201).send(`Category added with name: ${category_name}`)
     })
 }
 
@@ -43,7 +43,7 @@ const update = (request, response) => {
             if (error) {
                 throw error
             }
-            response.status(200).send(`Category modified with ID: ${id}`)
+            response.status(200).send(`Category modified with name: ${category_name}}`)
         }
     )
 }

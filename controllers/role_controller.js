@@ -28,7 +28,7 @@ const create = (request, response) => {
         if (error) {
             throw error
         }
-        response.status(201).send(`Role added with ID: ${id_employee}`)
+        response.status(201).send(`Role added with name: ${role_name}`)
     })
 }
 
@@ -43,7 +43,7 @@ const update = (request, response) => {
             if (error) {
                 throw error
             }
-            response.status(200).send(`Role modified with ID: ${id}`)
+            response.status(200).send(`Role modified with name: ${role_name}`)
         }
     )
 }

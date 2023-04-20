@@ -3,6 +3,8 @@ const routes = express.Router();
 const employee_controller = require('../controllers/employee_controller');
 const role_controller = require('../controllers/role_controller');
 const category_controller = require('../controllers/category_controller');
+const product_controller = require('../controllers/product_controller');
+const customer_controller = require('../controllers/customer_controller');
 
 routes.get('/', async (req, res) => {
 
@@ -19,8 +21,8 @@ routes.get('/employees/cashiers', employee_controller.getAllCashiers)
 //Додавати, редагувати, видаляти дані про працівників
 routes.get('/employee/:id', employee_controller.getById)
 routes.post('/employee/create', employee_controller.create)
-routes.put('/employee/:id', employee_controller.update)
-routes.delete('/employee/:id', employee_controller.deleteById)
+routes.put('/employee/update/:id', employee_controller.update)
+routes.delete('/employee/delete/:id', employee_controller.deleteById)
 
 //За прізвищем працівника знайти його телефон та адресу
 routes.get('/employeeByNumberAndAdress', employee_controller.getByNumberAndAdress)
@@ -33,8 +35,8 @@ routes.get('/employeeByNumberAndAdress', employee_controller.getByNumberAndAdres
 routes.get('/roles', role_controller.getAll)
 routes.get('/role/:id', role_controller.getById)
 routes.post('/role/create', role_controller.create)
-routes.put('/role/:id', role_controller.update)
-routes.delete('/role/:id', role_controller.deleteById)
+routes.put('/role/update/:id', role_controller.update)
+routes.delete('/role/delete/:id', role_controller.deleteById)
 
 
 
@@ -46,7 +48,47 @@ routes.get('/categories', category_controller.getAll)
 //Додавати, редагувати, видаляти дані про категорії товарів
 routes.get('/category/:id', category_controller.getById)
 routes.post('/category/create', category_controller.create)
-routes.put('/category/:id', category_controller.update)
-routes.delete('/category/:id', category_controller.deleteById)
+routes.put('/category/update/:id', category_controller.update)
+routes.delete('/category/delete/:id', category_controller.deleteById)
+
+
+
+//- - - - - - - - - - Product endpoints - - - - - - - - - -
+
+//Отримати інформацію про усі товари, відсортовані за назвою
+routes.get('/products', product_controller.getAll)
+
+//Здійснити пошук усіх товарів, що належать певній категорії, відсортованих за назвою
+routes.get('/productsByCategory', product_controller.getAllByCategory)
+
+//Здійснити пошук товарів за назвою
+routes.get('/productsByName', product_controller.getByName)
+
+//Додавати, редагувати, видаляти дані про товари
+routes.get('/product/:id', product_controller.getById)
+routes.post('/product/create', product_controller.create)
+routes.put('/product/update/:id', product_controller.update)
+routes.delete('/product/delete/:id', product_controller.deleteById)
+
+
+
+//- - - - - - - - - - Customer card endpoints - - - - - - - - - -
+
+//Отримати інформацію про усіх постійних клієнтів, відсортованих за прізвищем
+routes.get('/customers', customer_controller.getAll)
+
+//Отримати інформацію про усіх постійних клієнтів, що мають карту клієнта із певним відсотком, посортованих за прізвищем
+routes.get('/customersByPercent', customer_controller.getAllByPercent)
+
+//Отримати інформацію про усіх постійних клієнтів, що мають карту клієнта із певним відсотком, посортованих за прізвищем
+routes.get('/customerBySurname', customer_controller.getBySurname)
+
+//Додавати, редагувати, видаляти дані про товари
+routes.get('/customer/:id', customer_controller.getById)
+routes.post('/customer/create', customer_controller.create)
+routes.put('/customer/update/:id', customer_controller.update)
+routes.delete('/customer/delete/:id', customer_controller.deleteById)
+
+
 
 module.exports = routes;
