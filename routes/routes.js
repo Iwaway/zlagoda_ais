@@ -1,10 +1,12 @@
 const express = require('express');
+const argon2 = require("argon2")
 const routes = express.Router();
 const employee_controller = require('../controllers/employee_controller');
 const role_controller = require('../controllers/role_controller');
 const category_controller = require('../controllers/category_controller');
 const product_controller = require('../controllers/product_controller');
 const customer_controller = require('../controllers/customer_controller');
+const auth_controller = require('../controllers/autentification_controller');
 
 routes.get('/', async (req, res) => {
 
@@ -86,6 +88,7 @@ routes.post('/customer/create', customer_controller.create)
 routes.put('/customer/update/:card_number', customer_controller.update)
 routes.delete('/customer/delete/:card_number', customer_controller.deleteById)
 
+routes.post('/api/authenticate', auth_controller.authenticate)
 
 
 module.exports = routes;
