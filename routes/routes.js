@@ -34,9 +34,6 @@ routes.get('/employeeNumberAndAdress', employee_controller.getNumberAndAddress)
 //Додавати, редагувати, видаляти дані про ролі
 routes.get('/roles', role_controller.getAll)
 routes.get('/role/:id', role_controller.getById)
-routes.post('/role/create', role_controller.create)
-routes.put('/role/update/:id', role_controller.update)
-routes.delete('/role/delete/:id', role_controller.deleteById)
 
 
 
