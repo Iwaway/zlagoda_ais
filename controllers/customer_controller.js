@@ -46,17 +46,34 @@ const getBySurname = (request, response) => {
 }
 
 const create = (request, response) => {
+    var patronymic, city, street, zip_code
     const {
         card_number,
         surname,
         name,
-        patronymic,
         phone_number,
-        city,
-        street,
-        zip_code,
         percent
     } = request.body
+    if (!request.body.patronymic){
+        patronymic = null
+    }else{
+        patronymic = request.body.patronymic
+    }
+    if (!request.body.city){
+        city = null
+    }else{
+        city = request.body.city
+    }
+    if (!request.body.street){
+        street = null
+    }else{
+        street = request.body.street
+    }
+    if (!request.body.zip_code){
+        zip_code = null
+    }else{
+        zip_code = request.body.zip_code
+    }
     pool.query('INSERT INTO customer_card (card_number, cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent) VALUES ($9, $1, $2, $3, $4, $5, $6, $7, $8)',
     [surname, name, patronymic, phone_number, city, street, zip_code, percent, card_number], (error, results) => {
         if (error) {

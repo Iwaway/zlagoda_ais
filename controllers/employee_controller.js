@@ -30,10 +30,10 @@ const getById = (request, response) => {
 
 const getNumberAndAddress = (request, response) => {
     const {
-        empl_surname,
+        surname,
     } = request.body
     pool.query('SELECT phone_number, city, street FROM employee WHERE empl_surname = $1',
-    [empl_surname], (error, results) => {
+    [surname], (error, results) => {
         if (error) {
             response.status(400).send(`Bad request: ${error.message}`)
         }
@@ -42,11 +42,11 @@ const getNumberAndAddress = (request, response) => {
 }
 
 const create = (request, response) => {
+    var patronymic
     const {
         id,
         surname,
         name,
-        patronymic,
         role_id,
         salary,
         date_of_birth,
@@ -56,6 +56,11 @@ const create = (request, response) => {
         street,
         zip_code
     } = request.body
+    if (!request.body.patronymic){
+        patronymic = null
+    }else{
+        patronymic = request.body.patronymic
+    }
     pool.query('INSERT INTO employee (id_employee, empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES ($12, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
     [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
         if (error) {
@@ -90,6 +95,7 @@ const update = (request, response) => {
         }
     )
 }
+
 
 const deleteById = (request, response) => {
     const id = request.params.id
