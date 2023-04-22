@@ -25,7 +25,7 @@ routes.put('/employee/update/:id', employee_controller.update)
 routes.delete('/employee/delete/:id', employee_controller.deleteById)
 
 //За прізвищем працівника знайти його телефон та адресу
-routes.get('/employeeNumberAndAdress', employee_controller.getNumberAndAdress)
+routes.get('/employeeNumberAndAdress', employee_controller.getNumberAndAddress)
 
 
 
@@ -84,10 +84,10 @@ routes.get('/customersByPercent', customer_controller.getAllByPercent)
 routes.get('/customerBySurname', customer_controller.getBySurname)
 
 //Додавати, редагувати, видаляти дані про товари
-routes.get('/customer/:id', customer_controller.getById)
+routes.get('/customer/:card_number', customer_controller.getById)
 routes.post('/customer/create', customer_controller.create)
-routes.put('/customer/update/:id', customer_controller.update)
-routes.delete('/customer/delete/:id', customer_controller.deleteById)
+routes.put('/customer/update/:card_number', customer_controller.update)
+routes.delete('/customer/delete/:card_number', customer_controller.deleteById)
 
 
 

@@ -28,7 +28,7 @@ const getById = (request, response) => {
     })
 }
 
-const getNumberAndAdress = (request, response) => {
+const getNumberAndAddress = (request, response) => {
     const {
         empl_surname,
     } = request.body
@@ -43,11 +43,11 @@ const getNumberAndAdress = (request, response) => {
 
 const create = (request, response) => {
     const {
-        id_employee,
-        empl_surname,
-        empl_name,
-        empl_patronymic,
-        empl_role_id,
+        id,
+        surname,
+        name,
+        patronymic,
+        role_id,
         salary,
         date_of_birth,
         date_of_start,
@@ -57,21 +57,21 @@ const create = (request, response) => {
         zip_code
     } = request.body
     pool.query('INSERT INTO employee (id_employee, empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES ($12, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-    [empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id_employee], (error, results) => {
+    [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
         if (error) {
             throw error
         }
-        response.status(201).send(`Employee added with ID: ${id_employee}`)
+        response.status(201).send(`Employee added with ID: ${id}`)
     })
 }
 
 const update = (request, response) => {
     const id = request.params.id
     const {
-        empl_surname,
-        empl_name,
-        empl_patronymic,
-        empl_role_id,
+        surname,
+        name,
+        patronymic,
+        role_id,
         salary,
         date_of_birth,
         date_of_start,
@@ -82,7 +82,7 @@ const update = (request, response) => {
     } = request.body
     pool.query(
         'UPDATE employee SET empl_surname = $1, empl_name = $2, empl_patronymic = $3, empl_role_id = $4, salary = $5, date_of_birth = $6, date_of_start = $7, phone_number = $8, city = $9, street = $10, zip_code = $11  WHERE id_employee = $12',
-        [empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
+        [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
             if (error) {
                 throw error
             }
@@ -108,5 +108,5 @@ module.exports = {
     update,
     deleteById,
     getAllCashiers,
-    getNumberAndAdress,
+    getNumberAndAddress
 }

@@ -23,9 +23,9 @@ const getAllByCategory = (request, response) => {
 
 const getByName = (request, response) => {
     const {
-        product_name
+        name
     } = request.body
-    pool.query('SELECT * FROM product WHERE product_name = $1 ORDER BY product_name ASC', [product_name], (error, results) => {
+    pool.query('SELECT * FROM product WHERE product_name = $1 ORDER BY product_name ASC', [name], (error, results) => {
         if (error) {
             throw error
         }
@@ -45,29 +45,29 @@ const getById = (request, response) => {
 
 const create = (request, response) => {
     const {
-        product_name,
+        name,
         category_number,
         characteristics
     } = request.body
     pool.query('INSERT INTO product (category_number, product_name, characteristics) VALUES ($2, $1, $3)',
-    [product_name, category_number, characteristics], (error, results) => {
+    [name, category_number, characteristics], (error, results) => {
         if (error) {
             throw error
         }
-        response.status(201).send(`Product added with name: ${product_name}`)
+        response.status(201).send(`Product added with name: ${name}`)
     })
 }
 
 const update = (request, response) => {
     const id = parseInt(request.params.id)
     const {
-        product_name,
+        name,
         category_number,
         characteristics
     } = request.body
     pool.query(
-        'UPDATE product SET product_name = $1, category_number = $2, characteristics = $3 WHERE id_product = $4',
-        [product_name, category_number, characteristics, id], (error, results) => {
+        'UPDATE product SET name = $1, category_number = $2, characteristics = $3 WHERE id_product = $4',
+        [name, category_number, characteristics, id], (error, results) => {
             if (error) {
                 throw error
             }
@@ -82,7 +82,7 @@ const deleteById = (request, response) => {
         if (error) {
             throw error
         }
-        response.status(200).send(`Role deleted with ID: ${id}`)
+        response.status(200).send(`Product with ID: ${id}`)
     })
 }
 

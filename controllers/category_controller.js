@@ -21,29 +21,29 @@ const getById = (request, response) => {
 
 const create = (request, response) => {
     const {
-        category_name
+        name
     } = request.body
     pool.query('INSERT INTO category (category_name) VALUES ($1)',
-    [category_name], (error, results) => {
+    [name], (error, results) => {
         if (error) {
             throw error
         }
-        response.status(201).send(`Category added with name: ${category_name}`)
+        response.status(201).send(`Category added with name: ${name}`)
     })
 }
 
 const update = (request, response) => {
     const id = parseInt(request.params.id)
     const {
-        category_name
+        name
     } = request.body
     pool.query(
         'UPDATE category SET category_name = $1 WHERE category_number = $2',
-        [category_name, id], (error, results) => {
+        [name, id], (error, results) => {
             if (error) {
                 throw error
             }
-            response.status(200).send(`Category modified with name: ${category_name}}`)
+            response.status(200).send(`Category modified with name: ${name}}`)
         }
     )
 }

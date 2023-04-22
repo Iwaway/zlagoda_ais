@@ -23,8 +23,8 @@ const getAllByPercent = (request, response) => {
 }
 
 const getById = (request, response) => {
-    const id = request.params.id
-    pool.query('SELECT * FROM customer_card WHERE card_number = $1', [id], (error, results) => {
+    const card_number = request.params.card_number
+    pool.query('SELECT * FROM customer_card WHERE card_number = $1', [card_number], (error, results) => {
         if (error) {
             throw error
         }
@@ -34,10 +34,10 @@ const getById = (request, response) => {
 
 const getBySurname = (request, response) => {
     const {
-        cust_surname
+        surname
     } = request.body
     pool.query('SELECT * FROM customer_card WHERE cust_surname = $1',
-    [cust_surname], (error, results) => {
+    [surname], (error, results) => {
         if (error) {
             throw error
         }
@@ -48,9 +48,9 @@ const getBySurname = (request, response) => {
 const create = (request, response) => {
     const {
         card_number,
-        cust_surname,
-        cust_name,
-        cust_patronymic,
+        surname,
+        name,
+        patronymic,
         phone_number,
         city,
         street,
@@ -58,7 +58,7 @@ const create = (request, response) => {
         percent
     } = request.body
     pool.query('INSERT INTO customer_card (card_number, cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent) VALUES ($9, $1, $2, $3, $4, $5, $6, $7, $8)',
-    [cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent, card_number, ], (error, results) => {
+    [surname, name, patronymic, phone_number, city, street, zip_code, percent, card_number], (error, results) => {
         if (error) {
             throw error
         }
@@ -67,11 +67,11 @@ const create = (request, response) => {
 }
 
 const update = (request, response) => {
-    const id = request.params.id
+    const card_number = request.params.card_number
     const {
-        cust_surname,
-        cust_name,
-        cust_patronymic,
+        surname,
+        name,
+        patronymic,
         phone_number,
         city,
         street,
@@ -80,22 +80,22 @@ const update = (request, response) => {
     } = request.body
     pool.query(
         'UPDATE customer_card SET cust_surname = $1, cust_name = $2, cust_patronymic = $3, phone_number = $4, city = $5, street = $6, zip_code = $7, percent = $9  WHERE card_number = $8',
-        [cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, id, percent], (error, results) => {
+        [surname, name, patronymic, phone_number, city, street, zip_code, card_number, percent], (error, results) => {
             if (error) {
                 throw error
             }
-            response.status(200).send(`Customer card modified with ID: ${id}`)
+            response.status(200).send(`Customer card modified with ID: ${card_number}`)
         }
     )
 }
 
 const deleteById = (request, response) => {
-    const id = request.params.id
-    pool.query('DELETE FROM customer_card WHERE card_number = $1', [id], (error, results) => {
+    const card_number = request.params.card_number
+    pool.query('DELETE FROM customer_card WHERE card_number = $1', [card_number], (error, results) => {
         if (error) {
             throw error
         }
-        response.status(200).send(`Customer card deleted with ID: ${id}`)
+        response.status(200).send(`Customer card deleted with ID: ${card_number}`)
     })
 }
 
