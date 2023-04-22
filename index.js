@@ -22,7 +22,7 @@ app.use((error, req, res, next) => {
     res.status(500).json({error: error.message});
 });
 
-const server = app.listen(3000, () => {
+const server = app.listen(3499, () => {
     console.log(`Server listening on port ${server.address().port}`);
     // connectDb();
 });
