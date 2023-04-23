@@ -15,6 +15,9 @@ const getRoleForLogin = async (login) => {
 
 const authenticate = async (req, res) => {
     const {login, password} = req.body;
+    if (!login || !password) {
+        res.status(400).json({message: "Bad Request: login and password is mandatory"})
+    }
     const query = `SELECT password
                    FROM credentials
                    WHERE login = $1`;
@@ -45,12 +48,45 @@ const authenticate = async (req, res) => {
     });
 }
 
+const register = async (req, res) => {
+    const {employeeId, login, password} = req.body;
+    if (!employeeId || !login || !password) {
+        return res.status(400).json({message: "Bad Params: employeeId, login and password is mandatory"})
+    }
+    if (login.length > 30) {
+        return res.status(400).json({message: "Bad Params: login can be 30 or less characters long"})
+    }
+    if (password.length < 8 || password.length > 32) {
+        return res.status(400).json({message: "Bad Params: password length must be between 8 and 32 characters"})
+    }
+    const checkLoginDoesNotExistQuery =
+        'SELECT login FROM employee WHERE id_employee = $1 AND login IS NOT NULL';
+    const loginExists = (await pool.query(checkLoginDoesNotExistQuery, [employeeId])).rows.length === 1
+    if (loginExists) {
+        return res.status(400).json({message: "Bad Params: employeeAlready registered"});
+    }
+
+    const passwordHashed = await argon2.hash(password, {hashLength: 32})
+    const createCredentialsQuery = 'INSERT INTO credentials VALUES ($1, $2);';
+    const credentialsCreated = await pool.query(createCredentialsQuery, [login, passwordHashed]);
+    console.log(credentialsCreated)
+    if (!credentialsCreated) {
+        return res.status(500);
+    }
+
+    const updateEmployeeQuery = 'UPDATE employee SET login = $1 WHERE id_employee = $2'
+    await pool.query(updateEmployeeQuery, [login, employeeId]);
+    const roleName = getRoleForLogin(login);
+    const token = jwt.sign({'login': login, 'role': roleName}, secretKey, {expiresIn: '1h'});
+    res.json({token});
+}
+
 const authorizeManager = (req, res, next) => {
-    verifyTokenByPredicate(req, res, next, (decoded) => decoded.role_name === 'manager');
+    verifyTokenByPredicate(req, res, next, (decoded) => decoded.role === 'manager');
 };
 
 const authorizeCashier = (req, res, next) => {
-    verifyTokenByPredicate(req, res, next, (decoded) => decoded.role_name === 'cashier');
+    verifyTokenByPredicate(req, res, next, (decoded) => decoded.role === 'cashier');
 }
 
 const authorizeCashierPersonal = async (req, res, next) => {
@@ -73,7 +109,7 @@ const authorizeCashierPersonal = async (req, res, next) => {
 }
 
 const authorizeCashierOrManager = (req, res, next) => {
-    verifyTokenByPredicate(req, res, next, (decoded) => decoded.role_name === 'cashier' || decoded.role_name === 'manager');
+    verifyTokenByPredicate(req, res, next, (decoded) => decoded.role === 'cashier' || decoded.role === 'manager');
 }
 
 const verifyTokenByPredicate = (req, res, next, predicate) => {
@@ -94,4 +130,4 @@ const verifyTokenByPredicate = (req, res, next, predicate) => {
     }
 };
 
-module.exports = {authenticate, authorizeManager, authorizeCashier, authorizeCashierOrManager, authorizeCashierPersonal}
+module.exports = {authenticate, register, authorizeManager, authorizeCashier, authorizeCashierOrManager, authorizeCashierPersonal}

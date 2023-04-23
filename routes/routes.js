@@ -81,7 +81,7 @@ routes.post('/customer/create', customer_controller.create)
 routes.put('/customer/update/:card_number', customer_controller.update)
 routes.delete('/api/customer/delete/:card_number', customer_controller.deleteById)
 
-routes.post('/authenticate', auth_controller.authenticate)
-
+routes.post('/authenticate', auth_controller.authenticate);
+routes.post('/register', auth_controller.register);
 
 module.exports = routes;
