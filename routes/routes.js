@@ -1,23 +1,20 @@
 const express = require('express');
-const argon2 = require("argon2")
 const routes = express.Router();
 const employee_controller = require('../controllers/employee_controller');
 const role_controller = require('../controllers/role_controller');
 const category_controller = require('../controllers/category_controller');
 const product_controller = require('../controllers/product_controller');
 const customer_controller = require('../controllers/customer_controller');
-const auth_controller = require('../controllers/autentification_controller');
+const auth_controller = require('../controllers/auth_controller');
 
-routes.get('/', async (req, res) => {
-
-});
+const API_ROOT = '/zlagoda/api'
 
 //- - - - - - - - - - Employees endpoints - - - - - - - - - -
 
 //Отримати інформацію про усіх працівників, відсортованих за прізвищем
-routes.get('/employees', employee_controller.getAll)
+routes.get(API_ROOT + '/employees', auth_controller.authorizeManager, employee_controller.getAll)
 
-//Отримати інформацію про усіх працівників, що займають посаду касира, відсортованих за прізвищем
+//Отримати інформацію про усіх працівників, що обіймають посаду касира, відсортованих за прізвищем
 routes.get('/employees/cashiers', employee_controller.getAllCashiers)
 
 //Додавати, редагувати, видаляти дані про працівників
@@ -27,8 +24,7 @@ routes.put('/employee/update/:id', employee_controller.update)
 routes.delete('/employee/delete/:id', employee_controller.deleteById)
 
 //За прізвищем працівника знайти його телефон та адресу
-routes.get('/employeeNumberAndAdress', employee_controller.getNumberAndAddress)
-
+routes.get('/employeeNumberAndAddress', employee_controller.getNumberAndAddress)
 
 
 //- - - - - - - - - - Roles endpoints - - - - - - - - - -
@@ -36,7 +32,6 @@ routes.get('/employeeNumberAndAdress', employee_controller.getNumberAndAddress)
 //Додавати, редагувати, видаляти дані про ролі
 routes.get('/roles', role_controller.getAll)
 routes.get('/role/:id', role_controller.getById)
-
 
 
 //- - - - - - - - - - Categories endpoints - - - - - - - - - -
@@ -49,7 +44,6 @@ routes.get('/category/:id', category_controller.getById)
 routes.post('/category/create', category_controller.create)
 routes.put('/category/update/:id', category_controller.update)
 routes.delete('/category/delete/:id', category_controller.deleteById)
-
 
 
 //- - - - - - - - - - Product endpoints - - - - - - - - - -
@@ -70,7 +64,6 @@ routes.put('/product/update/:id', product_controller.update)
 routes.delete('/product/delete/:id', product_controller.deleteById)
 
 
-
 //- - - - - - - - - - Customer card endpoints - - - - - - - - - -
 
 //Отримати інформацію про усіх постійних клієнтів, відсортованих за прізвищем
@@ -86,9 +79,9 @@ routes.get('/customerBySurname', customer_controller.getBySurname)
 routes.get('/customer/:card_number', customer_controller.getById)
 routes.post('/customer/create', customer_controller.create)
 routes.put('/customer/update/:card_number', customer_controller.update)
-routes.delete('/customer/delete/:card_number', customer_controller.deleteById)
+routes.delete('/api/customer/delete/:card_number', customer_controller.deleteById)
 
-routes.post('/api/authenticate', auth_controller.authenticate)
+routes.post('/authenticate', auth_controller.authenticate)
 
 
 module.exports = routes;

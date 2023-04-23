@@ -3,7 +3,7 @@ const { pool } = require("../db");
 const getAll = (request, response) => {
     pool.query('SELECT * FROM customer_card ORDER BY cust_surname ASC', (error, results) => {
         if (error) {
-            response.status(400).send(`Bad request: ${error.message}`)
+            response.status(500).send(`${error.message}`)
         }
         response.status(200).json(results.rows)
     })
@@ -46,7 +46,7 @@ const getBySurname = (request, response) => {
 }
 
 const create = (request, response) => {
-    var patronymic, city, street, zip_code
+    let patronymic, city, street, zip_code
     const {
         card_number,
         surname,
@@ -54,11 +54,7 @@ const create = (request, response) => {
         phone_number,
         percent
     } = request.body
-    if (!request.body.patronymic){
-        patronymic = null
-    }else{
-        patronymic = request.body.patronymic
-    }
+    patronymic = patronymic ?? null
     if (!request.body.city){
         city = null
     }else{
@@ -95,9 +91,16 @@ const update = (request, response) => {
         zip_code,
         percent
     } = request.body
-    pool.query(
+
+    let query = 'UPDATE customer_card SET cust_surname = $1, cust_name = $2,';
+    if (patronymic) {
+        query += ` ${cust_partonimic},`
+    }
+    query += ' phone_number = $3, city = $4, street = $5, zip_code = $6, percent = $8  WHERE card_number = $7';
+
+        pool.query(
         'UPDATE customer_card SET cust_surname = $1, cust_name = $2, cust_patronymic = $3, phone_number = $4, city = $5, street = $6, zip_code = $7, percent = $9  WHERE card_number = $8',
-        [surname, name, patronymic, phone_number, city, street, zip_code, card_number, percent], (error, results) => {
+        [surname, name, phone_number, city, street, zip_code, card_number, percent], (error, results) => {
             if (error) {
                 response.status(400).send(`Bad request: ${error.message}`)
             }
