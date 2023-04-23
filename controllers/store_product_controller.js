@@ -1,7 +1,17 @@
 const { pool } = require("../db");
 
+const getAllNames = (request, response) => {
+    pool.query('SELECT product.product_name, upc, upc_prom, selling_price, products_number, promotion_product, store_product.id_product FROM store_product, product WHERE (store_product.id_product = product.id_product) ORDER BY product.product_name ASC', (error, results) => {
+        if (error) {
+            response.status(500).send(error.message)
+            console.log(error.message)
+        }
+        response.status(200).json(results.rows)
+    })
+}
+
 const getAll = (request, response) => {
-    pool.query('SELECT * FROM product ORDER BY product_name ASC', (error, results) => {
+    pool.query('SELECT * FROM store_product ORDER BY products_number DESC', (error, results) => {
         if (error) {
             response.status(500).send(error.message)
             console.log(error.message)
@@ -10,14 +20,8 @@ const getAll = (request, response) => {
     })
 }
 
-const getAllByCategory = (request, response) => {
-    const {
-        category_number
-    } = request.body
-    if (!category_number) {
-        res.status(400).json({message: "Bad Request: category number is mandatory"})
-    }
-    pool.query('SELECT * FROM product WHERE category_number = $1 ORDER BY product_name ASC', [category_number], (error, results) => {
+const getAllProm = (request, response) => {
+    pool.query('SELECT * FROM store_product WHERE promotion_product = true ORDER BY products_number DESC', (error, results) => {
         if (error) {
             response.status(500).send(error.message)
             console.log(error.message)
@@ -26,14 +30,8 @@ const getAllByCategory = (request, response) => {
     })
 }
 
-const getByName = (request, response) => {
-    const {
-        name
-    } = request.body
-    if (!name) {
-        res.status(400).json({message: "Bad Request: name is mandatory"})
-    }
-    pool.query('SELECT * FROM product WHERE product_name = $1 ORDER BY product_name ASC', [name], (error, results) => {
+const getAllNonProm = (request, response) => {
+    pool.query('SELECT * FROM store_product WHERE promotion_product = false ORDER BY products_number DESC', (error, results) => {
         if (error) {
             response.status(500).send(error.message)
             console.log(error.message)
@@ -43,11 +41,25 @@ const getByName = (request, response) => {
 }
 
 const getById = (request, response) => {
-    const id = parseInt(request.params.id)
-    if (!id) {
-        res.status(400).json({message: "Bad Params: id is mandatory"})
+    const upc = request.params.upc
+    if (!upc) {
+        response.status(400).json({message: "Bad Params: upc is mandatory"})
     }
-    pool.query('SELECT * FROM product WHERE id_product = $1', [id], (error, results) => {
+    pool.query('SELECT selling_price, products_number FROM store_product WHERE upc = $1', [upc], (error, results) => {
+        if (error) {
+            response.status(500).send(error.message)
+            console.log(error.message)
+        }
+        response.status(200).json(results.rows)
+    })
+}
+
+const getByIdAll = (request, response) => {
+    const upc = request.params.upc
+    if (!upc) {
+        response.status(400).json({message: "Bad Params: upc is mandatory"})
+    }
+    pool.query('SELECT selling_price, products_number, product.product_name, product.characteristics FROM store_product, product WHERE (store_product.id_product = product.id_product) AND upc = $1', [upc], (error, results) => {
         if (error) {
             response.status(500).send(error.message)
             console.log(error.message)
@@ -57,69 +69,82 @@ const getById = (request, response) => {
 }
 
 const create = (request, response) => {
+    let upc_prom = request.body.upc_prom
     const {
-        name,
-        category_number,
-        characteristics
+        upc,
+        id_product,
+        price,
+        number,
+        isPromotional
     } = request.body
-    if (!name || !category_number || !characteristics) {
-        res.status(400).json({message: "Bad Request: name, category number, characteristics is mandatory"})
+    upc_prom = upc_prom ?? null
+    if (!upc || !id_product || !price || !number || !isPromotional) {
+        response.status(400).json({message: "Bad Request: upc, id_product, price, number, isPromotional are mandatory"})
     }
-    pool.query('INSERT INTO product (category_number, product_name, characteristics) VALUES ($2, $1, $3)',
-    [name, category_number, characteristics], (error, results) => {
+    pool.query('INSERT INTO store_product (upc, upc_prom, id_product, selling_price, products_number, promotion_product) VALUES ($1, $2, $3, $4, $5, $6)',
+    [upc, upc_prom, id_product, price, number, isPromotional], (error, results) => {
         if (error) {
             response.status(500).send(error.message)
             console.log(error.message)
         }
-        response.status(201).send(`Product added with name: ${name}`)
+        response.status(201).send(`Product added to store with upc: ${upc}`)
     })
 }
 
 const update = (request, response) => {
-    const id = parseInt(request.params.id)
-    if (!id) {
-        res.status(400).json({message: "Bad Params: id is mandatory"})
+    const upc = request.params.upc
+    if (!upc) {
+        response.status(400).json({message: "Bad Params: upc is mandatory"})
     }
     const {
-        name,
-        category_number,
-        characteristics
+        upc_prom,
+        id_product,
+        price,
+        number,
+        isPromotional
     } = request.body
-    if (!name || !category_number || !characteristics) {
-        res.status(400).json({message: "Bad Request: name, category number, characteristics is mandatory"})
+    if (!id_product || !price || !number || !isPromotional) {
+        response.status(400).json({message: "Bad Request: upc, id_product, price, number, isPromotional are mandatory"})
     }
+    let query = 'UPDATE store_product SET id_product = $1, selling_price = $2,';
+    if (upc_prom) {
+        query += ` upc_prom = ${upc_prom},`
+    }
+    query += ' products_number = $3, promotion_product = $4 WHERE upc = $5';
     pool.query(
-        'UPDATE product SET name = $1, category_number = $2, characteristics = $3 WHERE id_product = $4',
-        [name, category_number, characteristics, id], (error, results) => {
+        query,
+        [id_product, price, number, isPromotional, upc], (error, results) => {
             if (error) {
                 response.status(500).send(error.message)
                 console.log(error.message)
             }
-            response.status(200).send(`Product modified with ID: ${id}`)
+            response.status(200).send(`Product modified in store with upc: ${upc}`)
         }
     )
 }
 
 const deleteById = (request, response) => {
-    const id = parseInt(request.params.id)
-    if (!id) {
-        res.status(400).json({message: "Bad Params: id is mandatory"})
+    const upc = request.params.upc
+    if (!upc) {
+        response.status(400).json({message: "Bad Params: upc is mandatory"})
     }
-    pool.query('DELETE FROM product WHERE id_product = $1', [id], (error, results) => {
+    pool.query('DELETE FROM store_product WHERE upc = $1', [upc], (error, results) => {
         if (error) {
             response.status(500).send(error.message)
             console.log(error.message)
         }
-        response.status(200).send(`Product with ID: ${id}`)
+        response.status(200).send(`Product in store deleted with upc: ${upc}`)
     })
 }
 
 module.exports = {
+    getAllNames,
     getAll,
+    getByIdAll,
     getById,
     create,
     update,
     deleteById,
-    getAllByCategory,
-    getByName,
+    getAllProm,
+    getAllNonProm,
 }

@@ -85,13 +85,25 @@ routes.delete('/api/customer/delete/:card_number', auth.authorizeManager, custom
 //- - - - - - - - - - Products in storage endpoints - - - - - - - - - -
 
 //Отримати інформацію про усі товари в магазині, відсортовані за назвою
-routes.get('/storeProducts', auth.authorizeCashier, store_product.getAll)
+routes.get('/storeProducts', auth.authorizeCashier, store_product.getAllNames)
+
+//Отримати інформацію про усі акційні товари, відсортовані за кількістю одиниць товару
+routes.get('/storeProducts/promotion', auth.authorizeCashierOrManager, store_product.getAllProm)
+
+//Отримати інформацію про усі неакційні товари, відсортовані за кількістю одиниць товару
+routes.get('/storeProducts/nonPromotion', auth.authorizeCashierOrManager, store_product.getAllNonProm)
 
 //Отримати інформацію про усі товари в магазині, відсортовані за кількістю
 routes.get('/storeProducts', auth.authorizeManager, store_product.getAll)
 
+//За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару
+routes.get('/storeProduct/:upc', auth.authorizeCashier, store_product.getById)
+
+//За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару, назву та характеристики товару
+routes.get('/storeProduct/:upc', auth.authorizeManager, store_product.getByIdAll)
+
 //Додавати, редагувати, видаляти дані про товари у магазині
-routes.get('/storeProduct/:upc', auth.authorizeManager, store_product.getById)
+routes.get('/storeProduct/:upc', store_product.getById)
 routes.post('/storeProduct/create', auth.authorizeManager, store_product.create)
 routes.put('/storeProduct/update/:upc', auth.authorizeManager, store_product.update)
 routes.delete('/storeProduct/delete/:upc', auth.authorizeManager, store_product.deleteById)
@@ -104,18 +116,9 @@ routes.post('/register', auth.register);
 module.exports = routes;
 
 //Manager
-// 1. Додавати нові дані про товари у магазині;
-// 2. Редагувати дані про товари у магазині;
-// 3. Видаляти дані про товари у магазині, чеки;
+// 3. Видаляти дані прo чеки;
 // 4. Видруковувати звіти з інформацією про усіх працівників, постійних клієнтів,
 // категорії товарів, товари, товари у магазині, чеки;
-// 10. Отримати інформацію про усі товари у магазині, відсортовані за кількістю;
-// 14. За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару,
-// назву та характеристики товару;
-// 15. Отримати інформацію про усі акційні товари, відсортовані за кількістю одиниць
-// товару/ за назвою;
-// 16. Отримати інформацію про усі не акційні товари, відсортовані за кількістю
-// одиниць товару/ за назвою;
 // 17. Отримати інформацію про усі чеки, створені певним касиром за певний період
 // часу (з можливістю перегляду куплених товарів у цьому чеку, їх назви, к-сті та ціни);
 // 18. Отримати інформацію про усі чеки, створені усіма касирами за певний період
@@ -128,15 +131,9 @@ module.exports = routes;
 // період часу.
 
 //Cashier
-// 2. Отримати інформацію про усі товари у магазині, відсортовані за назвою;
 // 7. Здійснювати продаж товарів (додавання чеків);
 // 9. Переглянути список усіх чеків, що створив касир за цей день;
 // 10. Переглянути список усіх чеків, що створив касир за певний період часу;
 // 11. За номером чеку вивести усю інформацію про даний чек, в тому числі
 // інформацію про назву, к-сть та ціну товарів, придбаних в даному чеку.
-// 12. Отримати інформацію про усі акційні товари, відсортовані за кількістю одиниць
-// товару/ за назвою;
-// 13. Отримати інформацію про усі не акційні товарів, відсортовані за кількістю
-// одиниць товару/ за назвою;
-// 14. За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару.
 // 15. Можливість отримати усю інформацію про себе.

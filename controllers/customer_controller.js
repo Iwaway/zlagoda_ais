@@ -15,7 +15,7 @@ const getAllByPercent = (request, response) => {
         percent
     } = request.body
     if (!percent) {
-        res.status(400).json({message: "Bad Request: percent is mandatory"})
+        response.status(400).json({message: "Bad Request: percent is mandatory"})
     }
     const percentFormatted = parseInt(percent)
     pool.query('SELECT * FROM customer_card WHERE percent = $1 ORDER BY cust_surname ASC', [percentFormatted], (error, results) => {
@@ -30,7 +30,7 @@ const getAllByPercent = (request, response) => {
 const getById = (request, response) => {
     const card_number = request.params.card_number
     if (!card_number) {
-        res.status(400).json({message: "Bad Params: card number is mandatory"})
+        response.status(400).json({message: "Bad Params: card number is mandatory"})
     }
     pool.query('SELECT * FROM customer_card WHERE card_number = $1', [card_number], (error, results) => {
         if (error) {
@@ -46,7 +46,7 @@ const getBySurname = (request, response) => {
         surname
     } = request.body
     if (!surname) {
-        res.status(400).json({message: "Bad Request: surname is mandatory"})
+        response.status(400).json({message: "Bad Request: surname is mandatory"})
     }
     pool.query('SELECT * FROM customer_card WHERE cust_surname = $1',
     [surname], (error, results) => {
@@ -73,7 +73,7 @@ const create = (request, response) => {
         percent
     } = request.body
     if (!card_number || !surname || !name || !phone_number || !percent) {
-        res.status(400).json({message: "Bad Request: card number, surname, name, phone_number, percent is mandatory"})
+        response.status(400).json({message: "Bad Request: card number, surname, name, phone_number, percent is mandatory"})
     }
     patronymic = patronymic ?? null
     city = city ?? null
@@ -92,7 +92,7 @@ const create = (request, response) => {
 const update = (request, response) => {
     const card_number = request.params.card_number
     if (!card_number) {
-        res.status(400).json({message: "Bad Params: card number is mandatory"})
+        response.status(400).json({message: "Bad Params: card number is mandatory"})
     }
     const {
         surname,
@@ -105,7 +105,7 @@ const update = (request, response) => {
         percent
     } = request.body
     if (!surname || !name || !phone_number || !city || !street || !zip_code || !percent) {
-        res.status(400).json({message: "Bad Request: card number is mandatory"})
+        response.status(400).json({message: "Bad Request: card number is mandatory"})
     }
     let query = 'UPDATE customer_card SET cust_surname = $1, cust_name = $2,';
     if (patronymic) {
@@ -127,7 +127,7 @@ const update = (request, response) => {
 const deleteById = (request, response) => {
     const card_number = request.params.card_number
     if (!card_number) {
-        res.status(400).json({message: "Bad Params: card number is mandatory"})
+        response.status(400).json({message: "Bad Params: card number is mandatory"})
     }
     pool.query('DELETE FROM customer_card WHERE card_number = $1', [card_number], (error, results) => {
         if (error) {

@@ -13,7 +13,7 @@ const getAll = (request, response) => {
 const getById = (request, response) => {
     const id = parseInt(request.params.id)
     if (!id) {
-        res.status(400).json({message: "Bad Params: category number is mandatory"})
+        response.status(400).json({message: "Bad Params: category number is mandatory"})
     }
     pool.query('SELECT * FROM category WHERE category_number = $1', [id], (error, results) => {
         if (error) {
@@ -29,7 +29,7 @@ const create = (request, response) => {
         name
     } = request.body
     if (!name) {
-        res.status(400).json({message: "Bad Request: name is mandatory"})
+        response.status(400).json({message: "Bad Request: name is mandatory"})
     }
     pool.query('INSERT INTO category (category_name) VALUES ($1)',
     [name], (error, results) => {
@@ -44,13 +44,13 @@ const create = (request, response) => {
 const update = (request, response) => {
     const id = parseInt(request.params.id)
     if (!id) {
-        res.status(400).json({message: "Bad Params: category number is mandatory"})
+        response.status(400).json({message: "Bad Params: category number is mandatory"})
     }
     const {
         name
     } = request.body
     if (!name) {
-        res.status(400).json({message: "Bad Request: name is mandatory"})
+        response.status(400).json({message: "Bad Request: name is mandatory"})
     }
     pool.query(
         'UPDATE category SET category_name = $1 WHERE category_number = $2',
@@ -67,7 +67,7 @@ const update = (request, response) => {
 const deleteById = (request, response) => {
     const id = parseInt(request.params.id)
     if (!id) {
-        res.status(400).json({message: "Bad Params: category number is mandatory"})
+        response.status(400).json({message: "Bad Params: category number is mandatory"})
     }
     pool.query('DELETE FROM category WHERE category_number = $1', [id], (error, results) => {
         if (error) {

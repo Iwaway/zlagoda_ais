@@ -23,7 +23,7 @@ const getAllCashiers = (request, response) => {
 const getById = (request, response) => {
     const id = request.params.id
     if (!id) {
-        res.status(400).json({message: "Bad Params: employee id is mandatory"})
+        response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }
     pool.query('SELECT * FROM employee WHERE id_employee = $1', [id], (error, results) => {
         if (error) {
@@ -39,7 +39,7 @@ const getNumberAndAddress = (request, response) => {
         surname,
     } = request.body
     if (!surname) {
-        res.status(400).json({message: "Bad Request: surname is mandatory"})
+        response.status(400).json({message: "Bad Request: surname is mandatory"})
     }
     pool.query('SELECT phone_number, city, street FROM employee WHERE empl_surname = $1',
     [surname], (error, results) => {
@@ -80,7 +80,7 @@ const create = (request, response) => {
 const update = (request, response) => {
     const id = request.params.id
     if (!id) {
-        res.status(400).json({message: "Bad Params: employee id is mandatory"})
+        response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }
     let patronymic = request.body.patronymic
     const {
@@ -96,7 +96,7 @@ const update = (request, response) => {
         zip_code
     } = request.body
     if (!surname || !name || !phone_number || !role_id || !salary || !date_of_birth || !date_of_start || !phone_number || !city || !street || !zip_code) {
-        res.status(400).json({message: "Bad Request: mandatory fields are null"})
+        response.status(400).json({message: "Bad Request: mandatory fields are null"})
     }
     let query = 'UPDATE employee SET empl_surname = $1, empl_name = $2,';
     if (patronymic) {
@@ -119,7 +119,7 @@ const update = (request, response) => {
 const deleteById = (request, response) => {
     const id = request.params.id
     if (!id) {
-        res.status(400).json({message: "Bad Params: employee id is mandatory"})
+        response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }
     pool.query('DELETE FROM employee WHERE id_employee = $1', [id], (error, results) => {
         if (error) {
