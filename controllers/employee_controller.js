@@ -1,4 +1,5 @@
 const { pool } = require("../db");
+const underAgeValidate = require("../utils/functions")
 
 const getAll = (request, response) => {
     pool.query('SELECT * FROM employee ORDER BY empl_surname ASC', (error, results) => {
@@ -21,7 +22,7 @@ const getAllCashiers = (request, response) => {
 }
 
 const getById = (request, response) => {
-    const id = request.params.id
+    const id = request.params.id_employee
     if (!id) {
         response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }
@@ -67,6 +68,12 @@ const create = (request, response) => {
         zip_code
     } = request.body
     patronymic = patronymic ?? null
+    if (phone_number.length>13) {
+        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    }
+    if (underAgeValidate(date_of_birth)){
+        response.status(400).json({message: "Bad Request: age must be not under 18"})
+    }
     pool.query('INSERT INTO employee (id_employee, empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES ($12, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
     [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
         if (error) {
@@ -78,7 +85,7 @@ const create = (request, response) => {
 }
 
 const update = (request, response) => {
-    const id = request.params.id
+    const id = request.params.id_employee
     if (!id) {
         response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }
@@ -97,6 +104,12 @@ const update = (request, response) => {
     } = request.body
     if (!surname || !name || !phone_number || !role_id || !salary || !date_of_birth || !date_of_start || !phone_number || !city || !street || !zip_code) {
         response.status(400).json({message: "Bad Request: mandatory fields are null"})
+    }
+    if (phone_number.length>13) {
+        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    }
+    if (underAgeValidate(date_of_birth)){
+        response.status(400).json({message: "Bad Request: age must be not under 18"})
     }
     let query = 'UPDATE employee SET empl_surname = $1, empl_name = $2,';
     if (patronymic) {
@@ -117,7 +130,7 @@ const update = (request, response) => {
 
 
 const deleteById = (request, response) => {
-    const id = request.params.id
+    const id = request.params.id_employee
     if (!id) {
         response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }

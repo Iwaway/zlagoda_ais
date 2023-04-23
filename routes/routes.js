@@ -19,10 +19,10 @@ routes.get(API_ROOT + '/employees', auth.authorizeManager, employee.getAll)
 routes.get('/employees/cashiers', employee.getAllCashiers)
 
 //Додавати, редагувати, видаляти дані про працівників
-routes.get('/employee/:empl_id', auth.authorizeManager, employee.getById)
+routes.get('/employee/:id_employee', auth.authorizeManager, employee.getById)
 routes.post('/employee/create', auth.authorizeManager, employee.create)
-routes.put('/employee/update/:empl_id', auth.authorizeManager, employee.update)
-routes.delete('/employee/delete/:empl_id', auth.authorizeManager, employee.deleteById)
+routes.put('/employee/update/:id_employee', auth.authorizeManager, employee.update)
+routes.delete('/employee/delete/:id_employee', auth.authorizeManager, employee.deleteById)
 
 //За прізвищем працівника знайти його телефон та адресу
 routes.get('/employeeNumberAndAddress', auth.authorizeManager, employee.getNumberAndAddress)

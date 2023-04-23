@@ -43,7 +43,7 @@ const getByName = (request, response) => {
 }
 
 const getById = (request, response) => {
-    const id = parseInt(request.params.id)
+    const id = parseInt(request.params.id_product)
     if (!id) {
         response.status(400).json({message: "Bad Params: id is mandatory"})
     }
@@ -76,7 +76,7 @@ const create = (request, response) => {
 }
 
 const update = (request, response) => {
-    const id = parseInt(request.params.id)
+    const id = parseInt(request.params.id_product)
     if (!id) {
         response.status(400).json({message: "Bad Params: id is mandatory"})
     }
@@ -101,7 +101,7 @@ const update = (request, response) => {
 }
 
 const deleteById = (request, response) => {
-    const id = parseInt(request.params.id)
+    const id = parseInt(request.params.id_product)
     if (!id) {
         response.status(400).json({message: "Bad Params: id is mandatory"})
     }

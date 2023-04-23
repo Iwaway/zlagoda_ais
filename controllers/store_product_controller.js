@@ -81,6 +81,9 @@ const create = (request, response) => {
     if (!upc || !id_product || !price || !number || !isPromotional) {
         response.status(400).json({message: "Bad Request: upc, id_product, price, number, isPromotional are mandatory"})
     }
+    if (price<0 || number<0) {
+        response.status(400).json({message: "Bad Request: price or number cannot be less then 0"})
+    }
     pool.query('INSERT INTO store_product (upc, upc_prom, id_product, selling_price, products_number, promotion_product) VALUES ($1, $2, $3, $4, $5, $6)',
     [upc, upc_prom, id_product, price, number, isPromotional], (error, results) => {
         if (error) {
@@ -105,6 +108,9 @@ const update = (request, response) => {
     } = request.body
     if (!id_product || !price || !number || !isPromotional) {
         response.status(400).json({message: "Bad Request: upc, id_product, price, number, isPromotional are mandatory"})
+    }
+    if (price<0 || number<0) {
+        response.status(400).json({message: "Bad Request: price or number cannot be less then 0"})
     }
     let query = 'UPDATE store_product SET id_product = $1, selling_price = $2,';
     if (upc_prom) {

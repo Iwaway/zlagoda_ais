@@ -11,7 +11,7 @@ const getAll = (request, response) => {
 }
 
 const getById = (request, response) => {
-    const id = parseInt(request.params.id)
+    const id = parseInt(request.params.category_number)
     if (!id) {
         response.status(400).json({message: "Bad Params: category number is mandatory"})
     }
@@ -42,7 +42,7 @@ const create = (request, response) => {
 }
 
 const update = (request, response) => {
-    const id = parseInt(request.params.id)
+    const id = parseInt(request.params.category_number)
     if (!id) {
         response.status(400).json({message: "Bad Params: category number is mandatory"})
     }
@@ -65,7 +65,7 @@ const update = (request, response) => {
 }
 
 const deleteById = (request, response) => {
-    const id = parseInt(request.params.id)
+    const id = parseInt(request.params.category_number)
     if (!id) {
         response.status(400).json({message: "Bad Params: category number is mandatory"})
     }

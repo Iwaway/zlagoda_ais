@@ -17,6 +17,10 @@ const getAllByPercent = (request, response) => {
     if (!percent) {
         response.status(400).json({message: "Bad Request: percent is mandatory"})
     }
+
+    if (percent<0) {
+        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    }
     const percentFormatted = parseInt(percent)
     pool.query('SELECT * FROM customer_card WHERE percent = $1 ORDER BY cust_surname ASC', [percentFormatted], (error, results) => {
         if (error) {
@@ -75,6 +79,12 @@ const create = (request, response) => {
     if (!card_number || !surname || !name || !phone_number || !percent) {
         response.status(400).json({message: "Bad Request: card number, surname, name, phone_number, percent is mandatory"})
     }
+    if (percent<0) {
+        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    }
+    if (phone_number.length>13) {
+        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    }
     patronymic = patronymic ?? null
     city = city ?? null
     street = street ?? null
@@ -106,6 +116,12 @@ const update = (request, response) => {
     } = request.body
     if (!surname || !name || !phone_number || !city || !street || !zip_code || !percent) {
         response.status(400).json({message: "Bad Request: card number is mandatory"})
+    }
+    if (percent<0) {
+        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    }
+    if (phone_number.length>13) {
+        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
     }
     let query = 'UPDATE customer_card SET cust_surname = $1, cust_name = $2,';
     if (patronymic) {
