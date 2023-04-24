@@ -19,10 +19,10 @@ routes.get(API_ROOT + '/employees', auth.authorizeManager, employee.getAll)
 routes.get(API_ROOT + '/employees/cashiers', employee.getAllCashiers)
 
 //Додавати, редагувати, видаляти дані про працівників
-routes.get(API_ROOT + '/employee/:id_employee', auth.authorizeManager, employee.getById)
-routes.post(API_ROOT + '/employee/create', auth.authorizeManager, employee.create)
-routes.put(API_ROOT + '/employee/update/:id_employee', auth.authorizeManager, employee.update)
-routes.delete(API_ROOT + '/employee/delete/:id_employee', auth.authorizeManager, employee.deleteById)
+routes.get(API_ROOT + '/employees/:id_employee', auth.authorizeManager, employee.getById)
+routes.post(API_ROOT + '/employees/create', auth.authorizeManager, employee.create)
+routes.put(API_ROOT + '/employees/update/:id_employee', auth.authorizeManager, employee.update)
+routes.delete(API_ROOT + '/employees/delete/:id_employee', auth.authorizeManager, employee.deleteById)
 
 //За прізвищем працівника знайти його телефон та адресу
 routes.get(API_ROOT + '/employeeNumberAndAddress', auth.authorizeManager, employee.getNumberAndAddress)
@@ -32,7 +32,7 @@ routes.get(API_ROOT + '/employeeNumberAndAddress', auth.authorizeManager, employ
 
 //Переглядати дані про ролі
 routes.get(API_ROOT + '/roles', role.getAll)
-routes.get(API_ROOT + '/role/:role_id', role.getById)
+routes.get(API_ROOT + '/roles/:id', role.getById)
 
 
 //- - - - - - - - - - Categories endpoints - - - - - - - - - -
