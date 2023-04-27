@@ -3,8 +3,8 @@ const { pool } = require("../db");
 const getAll = (request, response) => {
     pool.query('SELECT * FROM customer_card ORDER BY cust_surname ASC', (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -24,8 +24,8 @@ const getAllByPercent = (request, response) => {
     const percentFormatted = parseInt(percent)
     pool.query('SELECT * FROM customer_card WHERE percent = $1 ORDER BY cust_surname ASC', [percentFormatted], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -38,8 +38,8 @@ const getById = (request, response) => {
     }
     pool.query('SELECT * FROM customer_card WHERE card_number = $1', [card_number], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -55,8 +55,8 @@ const getBySurname = (request, response) => {
     pool.query('SELECT * FROM customer_card WHERE cust_surname = $1',
     [surname], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -92,8 +92,8 @@ const create = (request, response) => {
     pool.query('INSERT INTO customer_card (card_number, cust_surname, cust_name, cust_patronymic, phone_number, city, street, zip_code, percent) VALUES ($9, $1, $2, $3, $4, $5, $6, $7, $8)',
     [surname, name, patronymic, phone_number, city, street, zip_code, percent, card_number], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(201).send(`Customer card added with ID: ${card_number}`)
     })
@@ -132,8 +132,8 @@ const update = (request, response) => {
         pool.query(query,
         [surname, name, phone_number, city, street, zip_code, card_number, percent], (error, results) => {
             if (error) {
-                response.status(500).send(error.message)
                 console.log(error.message)
+                response.status(500).send(error.message)
             }
             response.status(200).send(`Customer card modified with ID: ${card_number}`)
         }
@@ -147,8 +147,8 @@ const deleteById = (request, response) => {
     }
     pool.query('DELETE FROM customer_card WHERE card_number = $1', [card_number], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).send(`Customer card deleted with ID: ${card_number}`)
     })

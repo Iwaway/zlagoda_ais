@@ -4,8 +4,8 @@ const underAgeValidate = require("../utils/functions")
 const getAll = (request, response) => {
     pool.query('SELECT * FROM employee ORDER BY empl_surname ASC', (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -14,8 +14,8 @@ const getAll = (request, response) => {
 const getAllCashiers = (request, response) => {
     pool.query('SELECT * FROM employee WHERE empl_role_id = (SELECT role_id FROM employee_role WHERE role_name = \'cashier\') ORDER BY empl_surname ASC', (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -28,8 +28,8 @@ const getById = (request, response) => {
     }
     pool.query('SELECT * FROM employee WHERE id_employee = $1', [id], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -45,8 +45,8 @@ const getNumberAndAddress = (request, response) => {
     pool.query('SELECT phone_number, city, street FROM employee WHERE empl_surname = $1',
     [surname], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -77,8 +77,8 @@ const create = (request, response) => {
     pool.query('INSERT INTO employee (id_employee, empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES ($12, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
     [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(201).send(`Employee added with ID: ${id}`)
     })
@@ -120,8 +120,8 @@ const update = (request, response) => {
         query,
         [surname, name, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
             if (error) {
-                response.status(500).send(error.message)
                 console.log(error.message)
+                response.status(500).send(error.message)
             }
             response.status(200).send(`Employee modified with ID: ${id}`)
         }
@@ -136,8 +136,8 @@ const deleteById = (request, response) => {
     }
     pool.query('DELETE FROM employee WHERE id_employee = $1', [id], (error, results) => {
         if (error) {
-            response.status(500).send(error.message)
             console.log(error.message)
+            response.status(500).send(error.message)
         }
         response.status(200).send(`Employee deleted with ID: ${id}`)
     })
