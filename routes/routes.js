@@ -107,7 +107,7 @@ routes.get(API_ROOT + '/storeProducts/:upc', auth.authorizeManager, store_produc
 
 //Додавати, редагувати, видаляти дані про товари у магазині
 routes.get(API_ROOT + '/storeProducts/:upc', store_product.getById)
-routes.post(API_ROOT + '/storeProducts/create', auth.authorizeManager, store_product.create)
+routes.post(API_ROOT + '/storeProducts/create', store_product.create)
 routes.put(API_ROOT + '/storeProducts/update/:upc', auth.authorizeManager, store_product.update)
 routes.delete(API_ROOT + '/storeProducts/delete/:upc', auth.authorizeManager, store_product.deleteById)
 
