@@ -1,7 +1,13 @@
 const { pool } = require("../db");
 
-const getAllNames = (request, response) => {
-    pool.query('SELECT product.product_name, upc, upc_prom, selling_price, products_number, promotion_product, store_product.id_product FROM store_product, product WHERE (store_product.id_product = product.id_product) ORDER BY product.product_name ASC', (error, results) => {
+const getById = (request, response) => {
+    const receipt_number = request.params.receipt_number
+    if (!receipt_number) {
+        response.status(400).json({message: "Bad Params: receipt number is mandatory"})
+    }
+    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number '+
+    +'INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product '+
+      'WHERE receipt.receipt_number = $1 ORDER BY product_name ASC', [receipt_number], (error, results) => {
         if (error) {
             console.log(error.message)
             response.status(500).send(error.message)
@@ -34,7 +40,8 @@ const getAllByCashier = (request, response) => {
     })
 }
 
-const getAllByPeriod = (request, response) => {
+const getSumByCashier = (request, response) => {
+    const id_employee = request.params.id_employee
     const {
         begin,
         end
@@ -45,9 +52,67 @@ const getAllByPeriod = (request, response) => {
     if (!id_employee) {
         response.status(400).json({message: "Bad Params: id employee is mandatory"})
     }
+    pool.query('SELECT SUM(sum_total) FROM receipt WHERE id_employee = $1 AND print_date > $2 AND print_date < $3',
+    [id_employee, begin, end] ,(error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).send(error.message)
+        }
+        response.status(200).json(results.rows)
+    })
+}
+
+const getSumByPeriod = (request, response) => {
+    const {
+        begin,
+        end
+    } = request.body
+    if (!begin || !end) {
+        response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
+    }
+    pool.query('SELECT SUM(sum_total) FROM receipt WHERE print_date > $1 AND print_date < $2',
+    [begin, end] ,(error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).send(error.message)
+        }
+        response.status(200).json(results.rows)
+    })
+}
+
+const getAllByPeriod = (request, response) => {
+    const {
+        begin,
+        end
+    } = request.body
+    if (!begin || !end) {
+        response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
+    }
     pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number '+
     +'INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product '+
       'WHERE print_date > $1 AND print_date < $2 ORDER BY product_name ASC',
+    [begin, end] ,(error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).send(error.message)
+        }
+        response.status(200).json(results.rows)
+    })
+}
+
+const getCountByPeriod = (request, response) => {
+    const id_product = request.params.id_product
+    const {
+        begin,
+        end
+    } = request.body
+    if (!begin || !end) {
+        response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
+    }
+    if (!id_product) {
+        response.status(400).json({message: "Bad Params: id_product is mandatory"})
+    }
+    pool.query('SELECT COUNT(sp.id_product) FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc WHERE print_date > $1 AND print_date < $2',
     [begin, end] ,(error, results) => {
         if (error) {
             console.log(error.message)
@@ -104,8 +169,11 @@ const getSumByNumber = async (receipt_number) => {
 }
 
 module.exports = {
-    getAllNames,
     create,
     getAllByCashier,
     getAllByPeriod,
+    getSumByCashier,
+    getSumByPeriod,
+    getCountByPeriod,
+    getById,
 }
