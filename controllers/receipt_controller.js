@@ -129,7 +129,6 @@ const create = async (request, response) => {
         receipt_number,
         id_employee,
         date,
-        sum,
     } = request.body
     card_number = card_number ?? null
     if (card_number){
@@ -138,15 +137,9 @@ const create = async (request, response) => {
     if (!receipt_number || !id_employee || !date || !sum) {
         response.status(400).json({message: "Bad Request: number, id_employee, date, sum are mandatory"})
     }
-    if (sum<0) {
-        response.status(400).json({message: "Bad Request: sum cannot be less then 0"})
-    }
-    if (percent){
-        sum = sum - sum*percent*0,01
-    }
-    const vat = sum * 0.2
+    const vat = 0
     pool.query('INSERT INTO receipt (receipt_number, id_employee, card_number, print_date, sum_total, vat) VALUES ($1, $2, $3, $4, $5, $6)',
-    [receipt_number, id_employee, card_number, date, sum, vat], (error, results) => {
+    [receipt_number, id_employee, card_number, date, 0, vat], (error, results) => {
         if (error) {
             console.log(error.message)
             response.status(500).send(error.message)
