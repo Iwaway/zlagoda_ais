@@ -5,9 +5,7 @@ const getById = (request, response) => {
     if (!receipt_number) {
         response.status(400).json({message: "Bad Params: receipt number is mandatory"})
     }
-    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number '+
-    +'INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product '+
-      'WHERE receipt.receipt_number = $1 ORDER BY product_name ASC', [receipt_number], (error, results) => {
+    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product WHERE receipt.receipt_number = $1 ORDER BY product_name ASC', [receipt_number], (error, results) => {
         if (error) {
             console.log(error.message)
             response.status(500).send(error.message)
@@ -28,9 +26,7 @@ const getAllByCashier = (request, response) => {
     if (!id_employee) {
         response.status(400).json({message: "Bad Params: id employee is mandatory"})
     }
-    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number '+
-    +'INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product '+
-      'WHERE id_employee = $1 AND print_date > $2 AND print_date < $3 ORDER BY product_name ASC',
+    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product WHERE id_employee = $1 AND print_date > $2 AND print_date < $3 ORDER BY product_name ASC',
     [id_employee, begin, end] ,(error, results) => {
         if (error) {
             console.log(error.message)
@@ -88,9 +84,9 @@ const getAllByPeriod = (request, response) => {
     if (!begin || !end) {
         response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
     }
-    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number '+
-    +'INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product '+
-      'WHERE print_date > $1 AND print_date < $2 ORDER BY product_name ASC',
+    const query = 'SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product WHERE print_date > $1 AND print_date < $2 ORDER BY product_name ASC'
+    console.log(query)
+    pool.query(query,
     [begin, end] ,(error, results) => {
         if (error) {
             console.log(error.message)
