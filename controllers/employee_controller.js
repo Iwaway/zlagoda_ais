@@ -1,11 +1,11 @@
-const { pool } = require("../db");
+const {pool} = require("../db");
 const underAgeValidate = require("../utils/functions")
 
 const getAll = (request, response) => {
     pool.query('SELECT * FROM employee ORDER BY empl_surname ASC', (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            return response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -15,7 +15,7 @@ const getAllCashiers = (request, response) => {
     pool.query('SELECT * FROM employee WHERE empl_role_id = (SELECT role_id FROM employee_role WHERE role_name = \'cashier\') ORDER BY empl_surname ASC', (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            return response.status(500).send(error.message)
         }
         response.status(200).json(results.rows)
     })
@@ -29,9 +29,13 @@ const getById = (request, response) => {
     pool.query('SELECT * FROM employee WHERE id_employee = $1', [id], (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            return response.status(500).send(error.message)
         }
-        response.status(200).json(results.rows)
+        if (results.rows.length) {
+            response.status(200).json(results.rows[0]);
+        } else {
+            response.status(404).send();
+        }
     })
 }
 
@@ -43,13 +47,13 @@ const getNumberAndAddress = (request, response) => {
         response.status(400).json({message: "Bad Request: surname is mandatory"})
     }
     pool.query('SELECT phone_number, city, street FROM employee WHERE empl_surname = $1',
-    [surname], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
+        [surname], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).send(error.message)
+            }
+            response.status(200).json(results.rows)
+        })
 }
 
 const create = (request, response) => {
@@ -68,20 +72,20 @@ const create = (request, response) => {
         zip_code
     } = request.body
     patronymic = patronymic ?? null
-    if (phone_number.length>13) {
+    if (phone_number.length > 13) {
         response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
     }
-    if (underAgeValidate(date_of_birth)){
+    if (underAgeValidate(date_of_birth)) {
         response.status(400).json({message: "Bad Request: age must be not under 18"})
     }
     pool.query('INSERT INTO employee (id_employee, empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES ($12, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-    [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(201).send(`Employee added with ID: ${id}`)
-    })
+        [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).send(error.message)
+            }
+            response.status(201).send(`Employee added with ID: ${id}`)
+        })
 }
 
 const update = (request, response) => {
@@ -105,10 +109,10 @@ const update = (request, response) => {
     if (!surname || !name || !phone_number || !role_id || !salary || !date_of_birth || !date_of_start || !phone_number || !city || !street || !zip_code) {
         response.status(400).json({message: "Bad Request: mandatory fields are null"})
     }
-    if (phone_number.length>13) {
+    if (phone_number.length > 13) {
         response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
     }
-    if (underAgeValidate(date_of_birth)){
+    if (underAgeValidate(date_of_birth)) {
         response.status(400).json({message: "Bad Request: age must be not under 18"})
     }
     let query = 'UPDATE employee SET empl_surname = $1, empl_name = $2,';
