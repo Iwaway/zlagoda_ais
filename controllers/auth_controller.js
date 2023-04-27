@@ -10,8 +10,16 @@ const getRoleForLogin = async (login) => {
                             JOIN employee_role er ON empl.empl_role_id = er.role_id
                    WHERE empl.login = $1;`
     const result = await pool.query(query, [login]);
-    return result.rows[0].role_name;
+    return result.rows[0]?.role_name;
 };
+
+const getEmployeeIdForLogin = async (login) => {
+    const query = `SELECT id_employee
+                   FROM employee
+                   WHERE login = $1;`;
+    const result = await pool.query(query, [login]);
+    return result.rows[0]?.id_employee
+}
 
 const authenticate = async (req, res) => {
     const {login, password} = req.body;
@@ -34,8 +42,13 @@ const authenticate = async (req, res) => {
                     argon2.verify(hash, password, {hashLength: 32}).then(async (matches) => {
                         if (matches) {
                             const roleName = await getRoleForLogin(login);
-                            const token = jwt.sign({'login': login, 'role': roleName}, secretKey, {expiresIn: '1h'});
-                            res.json({token});
+                            const employeeId = await getEmployeeIdForLogin(login);
+                            const token = jwt.sign({
+                                'login': login,
+                                'role': roleName,
+                                'id': employeeId
+                            }, secretKey, {expiresIn: '1h'});
+                            res.json({token: token});
                         } else {
                             res.status(401).json({message: 'Invalid credentials'});
                         }
@@ -77,6 +90,7 @@ const register = async (req, res) => {
     const updateEmployeeQuery = 'UPDATE employee SET login = $1 WHERE id_employee = $2'
     await pool.query(updateEmployeeQuery, [login, employeeId]);
     const roleName = getRoleForLogin(login);
+    // todo: employeeId
     const token = jwt.sign({'login': login, 'role': roleName}, secretKey, {expiresIn: '1h'});
     res.json({token});
 }
@@ -130,4 +144,21 @@ const verifyTokenByPredicate = (req, res, next, predicate) => {
     }
 };
 
-module.exports = {authenticate, register, authorizeManager, authorizeCashier, authorizeCashierOrManager, authorizeCashierPersonal}
+const addIdToParams = (req, res, next) => {
+    const decoded = jwt.decode(req.headers['authorization']?.substring(7))
+    console.log(decoded);
+    if (decoded.id) {
+        req.params.id_employee = decoded.id;
+    }
+    next();
+}
+
+module.exports = {
+    authenticate,
+    register,
+    authorizeManager,
+    authorizeCashier,
+    authorizeCashierOrManager,
+    authorizeCashierPersonal,
+    addIdToParams
+}
