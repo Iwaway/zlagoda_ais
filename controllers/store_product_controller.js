@@ -69,7 +69,7 @@ const getByIdAll = (request, response) => {
     })
 }
 
-const create = (request, response) => {
+const create = async (request, response) => {
     let upc_prom = request.body.upc_prom
     const {
         upc,
@@ -85,7 +85,7 @@ const create = (request, response) => {
     if (price<0 || number<0) {
         response.status(400).json({message: "Bad Request: price or number cannot be less then 0"})
     }
-    changePriceIfExist(id_product, price)
+    await changePriceIfExist(id_product, price)
     pool.query('INSERT INTO store_product (upc, upc_prom, id_product, selling_price, products_number, promotion_product) VALUES ($1, $2, $3, $4, $5, $6)',
     [upc, upc_prom, id_product, price, number, isPromotional], (error, results) => {
         if (error) {
@@ -96,14 +96,26 @@ const create = (request, response) => {
     })
 }
 
-const changePriceIfExist = (id_product, price) => {
-    pool.query('UPDATE store_product SET selling_price = $1 WHERE id_product = $2', [price, id_product], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        return response.status(200).json(results.rows)
-    })
+const getByProductIdAll = async (id_product) => {
+    const query = 'SELECT * FROM store_product WHERE id_product = $1'
+    const result = await pool.query(query, [id_product]);
+    return result.rows;
+}
+
+const changePriceIfExist = async (id_product, price) => {
+    const products = await getByProductIdAll(id_product)
+    products.forEach(async element => {
+        let {
+            upc,
+            upc_prom,
+            id_product,
+            products_number,
+            promotion_product
+        } = element
+        const query = 'UPDATE store_product SET upc_prom = $2, id_product = $3, selling_price = $4, products_number = $5, promotion_product = $6  WHERE upc = $1'
+        await pool.query(query, [upc, upc_prom, id_product, price, products_number, promotion_product]);
+    });
+    
 }
 
 const update = (request, response) => {

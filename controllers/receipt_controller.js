@@ -99,6 +99,10 @@ const create = (request, response) => {
     })
 }
 
+const getSumByNumber = (request, res) => {
+
+}
+
 const update = (request, response) => {
     const upc = request.params.upc
     if (!upc) {
