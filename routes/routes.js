@@ -115,25 +115,25 @@ routes.delete(API_ROOT + '/storeProducts/delete/:upc', auth.authorizeManager, st
 //- - - - - - - - - - Receipts endpoints - - - - - - - - - -
 
 //Отримати інформацію про усі чеки, створені певним касиром за певний період часу
-routes.get(API_ROOT + '/receipts/:id_employee', receipt.getAllByCashier)
+routes.get(API_ROOT + '/receipts/:id_employee', auth.authorizeManager, receipt.getAllByCashier)
 
 //Отримати інформацію про усі чеки, створені усіма касирами за певний період часу
-routes.get(API_ROOT + '/receipts/', receipt.getAllByPeriod)
+routes.get(API_ROOT + '/receipts/', auth.authorizeManager, receipt.getAllByPeriod)
 
 //Визначити загальну суму проданих товарів з чеків, створених певним касиром за певний період часу
-routes.get(API_ROOT + '/receipts/sumByCashier/:id_employee', receipt.getSumByCashier)
+routes.get(API_ROOT + '/receipts/sumByCashier/:id_employee', auth.authorizeManager, receipt.getSumByCashier)
 
 //Визначити загальну суму проданих товарів з чеків, створених усіма касиром за певний період часу
-routes.get(API_ROOT + '/receipts/sumByPeriod/', receipt.getSumByPeriod)
+routes.get(API_ROOT + '/receipts/sumByPeriod/', auth.authorizeManager, receipt.getSumByPeriod)
 
 //Визначити загальну кількість одиниць певного товару, проданого за певний період часу
-routes.get(API_ROOT + '/receipts/countByPeriod/:product_id', receipt.getCountByPeriod)
+routes.get(API_ROOT + '/receipts/countByPeriod/:product_id', auth.authorizeManager, receipt.getCountByPeriod)
 
 //Здійснювати продаж товарів (додавання чеків)
 routes.post(API_ROOT + '/receipts/create', auth.authorizeCashier, receipt.create)
 
 //За номером чеку вивести усю інформацію про даний чек
-routes.get(API_ROOT + '/receipts/:receipt_number', receipt.getById)
+routes.get(API_ROOT + '/receipts/:receipt_number', auth.authorizeCashier, receipt.getById)
 
 //Видаляти дані прo чеки
 routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
@@ -141,9 +141,9 @@ routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManag
 //- - - - - - - - - - Sales endpoints - - - - - - - - - -
 
 //Здійснювати продаж товарів (додавання чеків)
-routes.post(API_ROOT + '/sales/create', sale.create);
+routes.post(API_ROOT + '/sales/create', auth.authorizeCashier, sale.create);
 
-routes.post(API_ROOT + '/sales/createMany', sale.createMany);
+routes.post(API_ROOT + '/sales/createMany', auth.authorizeCashier, sale.createMany);
 
 //- - - - - - - - - - Authentication endpoints - - - - - - - - - -
 
