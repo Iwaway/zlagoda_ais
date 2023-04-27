@@ -9,49 +9,23 @@ const getAllNames = (request, response) => {
         response.status(200).json(results.rows)
     })
 }
-//Отримати інформацію про усі чеки, створені певним касиром за певний період
-// часу (з можливістю перегляду куплених товарів у цьому чеку, їх назви, к-сті та ціни);
 
-const getAll = (request, response) => {
-    pool.query('SELECT * FROM store_product ORDER BY products_number DESC', (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
-}
-
-const getAllProm = (request, response) => {
-    pool.query('SELECT * FROM store_product WHERE promotion_product = true ORDER BY products_number DESC', (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
-}
-
-const getById = (request, response) => {
-    const upc = request.params.upc
-    if (!upc) {
-        response.status(400).json({message: "Bad Params: upc is mandatory"})
+const getAllByCashier = (request, response) => {
+    const id_employee = request.params.id_employee
+    const {
+        begin,
+        end
+    } = request.body
+    if (!begin || !end) {
+        response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
     }
-    pool.query('SELECT selling_price, products_number FROM store_product WHERE upc = $1', [upc], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
-}
-
-const getByIdAll = (request, response) => {
-    const upc = request.params.upc
-    if (!upc) {
-        response.status(400).json({message: "Bad Params: upc is mandatory"})
+    if (!id_employee) {
+        response.status(400).json({message: "Bad Params: id employee is mandatory"})
     }
-    pool.query('SELECT selling_price, products_number, product.product_name, product.characteristics FROM store_product, product WHERE (store_product.id_product = product.id_product) AND upc = $1', [upc], (error, results) => {
+    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number '+
+    +'INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product '+
+      'WHERE id_employee = $1 AND print_date > $2 AND print_date < $3 ORDER BY product_name ASC',
+    [id_employee, begin, end] ,(error, results) => {
         if (error) {
             console.log(error.message)
             response.status(500).send(error.message)
@@ -60,7 +34,30 @@ const getByIdAll = (request, response) => {
     })
 }
 
-const create = (request, response) => {
+const getAllByPeriod = (request, response) => {
+    const {
+        begin,
+        end
+    } = request.body
+    if (!begin || !end) {
+        response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
+    }
+    if (!id_employee) {
+        response.status(400).json({message: "Bad Params: id employee is mandatory"})
+    }
+    pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number '+
+    +'INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product '+
+      'WHERE print_date > $1 AND print_date < $2 ORDER BY product_name ASC',
+    [begin, end] ,(error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).send(error.message)
+        }
+        response.status(200).json(results.rows)
+    })
+}
+
+const create = async (request, response) => {
     let card_number = request.body.card_number
     let percent
     const {
@@ -71,13 +68,7 @@ const create = (request, response) => {
     } = request.body
     card_number = card_number ?? null
     if (card_number){
-        pool.query('SELECT percent FROM customer_card WHERE card_number = $1'), [card_number], (error, results) => {
-            if (error) {
-                console.log(error.message)
-                response.status(500).send(error.message)
-            }
-            percent = response.status(200).json(results.rows)
-        }
+        percent = await getPercentByCustomer(card_number)
     }
     if (!receipt_number || !id_employee || !date || !sum) {
         response.status(400).json({message: "Bad Request: number, id_employee, date, sum are mandatory"})
@@ -99,66 +90,22 @@ const create = (request, response) => {
     })
 }
 
-const getSumByNumber = (request, res) => {
-
+const getPercentByCustomer = async (card_number) => {
+    const query = 'SELECT percent FROM customer_card WHERE card_number = $1'
+    const result = await pool.query(query, [card_number]);
+    return result.rows[0].percent
 }
 
-const update = (request, response) => {
-    const upc = request.params.upc
-    if (!upc) {
-        response.status(400).json({message: "Bad Params: upc is mandatory"})
-    }
-    const {
-        upc_prom,
-        id_product,
-        price,
-        number,
-        isPromotional
-    } = request.body
-    if (!id_product || !price || !number || !isPromotional) {
-        response.status(400).json({message: "Bad Request: upc, id_product, price, number, isPromotional are mandatory"})
-    }
-    if (price<0 || number<0) {
-        response.status(400).json({message: "Bad Request: price or number cannot be less then 0"})
-    }
-    let query = 'UPDATE store_product SET id_product = $1, selling_price = $2,';
-    if (upc_prom) {
-        query += ` upc_prom = ${upc_prom},`
-    }
-    query += ' products_number = $3, promotion_product = $4 WHERE upc = $5';
-    pool.query(
-        query,
-        [id_product, price, number, isPromotional, upc], (error, results) => {
-            if (error) {
-                console.log(error.message)
-                response.status(500).send(error.message)
-            }
-            response.status(200).send(`Product modified in store with upc: ${upc}`)
-        }
-    )
-}
-
-const deleteById = (request, response) => {
-    const receipt_number = request.params.receipt_number
-    if (!receipt_number) {
-        response.status(400).json({message: "Bad Params: receipt number is mandatory"})
-    }
-    pool.query('DELETE FROM receipt WHERE receipt_number = $1', [receipt_number], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).send(`Receipt deleted with number: ${receipt_number}`)
-    })
+const getSumByNumber = async (receipt_number) => {
+    const query = 'SELECT SUM(selling_price) FROM sale WHERE receipt_number = $1'
+    const result = await pool.query(query, [receipt_number]);
+    console.log(result.rows[0])
+    return result.rows[0];
 }
 
 module.exports = {
     getAllNames,
-    getAll,
-    getByIdAll,
-    getById,
     create,
-    update,
-    deleteById,
-    getAllProm,
+    getAllByCashier,
+    getAllByPeriod,
 }

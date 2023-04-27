@@ -113,8 +113,10 @@ routes.delete(API_ROOT + '/storeProducts/delete/:upc', auth.authorizeManager, st
 //- - - - - - - - - - Receipts endpoints - - - - - - - - - -
 
 //Отримати інформацію про усі чеки, створені певним касиром за певний період часу
+routes.get(API_ROOT + '/storeProducts/:id_employee', receipt.getAllByCashier)
 
 //Отримати інформацію про усі чеки, створені усіма касирами за певний період часу
+routes.get(API_ROOT + '/storeProducts/', receipt.getAllByPeriod)
 
 //Визначити загальну суму проданих товарів з чеків, створених певним касиром за певний період часу
 
@@ -125,7 +127,6 @@ routes.post(API_ROOT + '/receipts/create', auth.authorizeCashier, receipt.create
 
 //Видаляти дані прo чеки
 routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
-
 
 //- - - - - - - - - - Sales endpoints - - - - - - - - - -
 
