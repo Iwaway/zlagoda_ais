@@ -93,7 +93,7 @@ const updateReceipt = async (receipt_number, total_price) => {
     const {
         id_employee,
         card_number,
-        print_date,
+        print_date
     } = receipt.body
     const query = 'UPDATE receipt SET id_employee = $1, card_number = $2, print_date = $3, sum_total = $4, vat = $5 WHERE receipt_number = $4'
     await pool.query(query, [id_employee, card_number, print_date, total_price, vat, receipt_number])
@@ -101,4 +101,5 @@ const updateReceipt = async (receipt_number, total_price) => {
 
 module.exports = {
     create,
+    createMany,
 }

@@ -8,6 +8,7 @@ const store_product = require('../controllers/store_product_controller');
 const customer = require('../controllers/customer_controller');
 const auth = require('../controllers/auth_controller');
 const receipt = require('../controllers/receipt_controller');
+const sale = require('../controllers/sale_controller');
 
 const API_ROOT = '/zlagoda/api'
 
@@ -140,7 +141,9 @@ routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManag
 //- - - - - - - - - - Sales endpoints - - - - - - - - - -
 
 //Здійснювати продаж товарів (додавання чеків)
+routes.post(API_ROOT + '/sales/create', auth.authenticate, sale.create);
 
+routes.post(API_ROOT + '/sales/createMany', auth.authenticate, sale.createMany);
 
 //- - - - - - - - - - Authentication endpoints - - - - - - - - - -
 
