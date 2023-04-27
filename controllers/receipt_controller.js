@@ -97,7 +97,7 @@ const getAllByPeriod = (request, response) => {
 }
 
 const getCountByPeriod = (request, response) => {
-    const id_product = request.params.id_product
+    const product_id = request.params.product_id
     const {
         begin,
         end
@@ -105,8 +105,8 @@ const getCountByPeriod = (request, response) => {
     if (!begin || !end) {
         response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
     }
-    if (!id_product) {
-        response.status(400).json({message: "Bad Params: id_product is mandatory"})
+    if (!product_id) {
+        response.status(400).json({message: "Bad Params: product id is mandatory"})
     }
     pool.query('SELECT COUNT(sp.id_product) FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc WHERE print_date > $1 AND print_date < $2',
     [begin, end] ,(error, results) => {
