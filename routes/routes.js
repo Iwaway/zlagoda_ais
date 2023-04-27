@@ -130,20 +130,20 @@ routes.get(API_ROOT + '/receipts/sumByPeriod/', receipt.getSumByPeriod)
 routes.get(API_ROOT + '/receipts/countByPeriod/:product_id', receipt.getCountByPeriod)
 
 //Здійснювати продаж товарів (додавання чеків)
-routes.post(API_ROOT + '/receipts/create', auth.authorizeCashier, receipt.create)
+routes.post(API_ROOT + '/receipts/create', receipt.create)
 
 //За номером чеку вивести усю інформацію про даний чек
 routes.get(API_ROOT + '/receipts/:receipt_number', receipt.getById)
 
 //Видаляти дані прo чеки
-routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
+// routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
 
 //- - - - - - - - - - Sales endpoints - - - - - - - - - -
 
 //Здійснювати продаж товарів (додавання чеків)
-routes.post(API_ROOT + '/sales/create', auth.authenticate, sale.create);
+routes.post(API_ROOT + '/sales/create', sale.create);
 
-routes.post(API_ROOT + '/sales/createMany', auth.authenticate, sale.createMany);
+routes.post(API_ROOT + '/sales/createMany', sale.createMany);
 
 //- - - - - - - - - - Authentication endpoints - - - - - - - - - -
 

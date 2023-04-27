@@ -134,8 +134,8 @@ const create = async (request, response) => {
     if (card_number){
         percent = await getPercentByCustomer(card_number)
     }
-    if (!receipt_number || !id_employee || !date || !sum) {
-        response.status(400).json({message: "Bad Request: number, id_employee, date, sum are mandatory"})
+    if (!receipt_number || !id_employee || !date) {
+        response.status(400).json({message: "Bad Request: number, id_employee, date are mandatory"})
     }
     const vat = 0
     pool.query('INSERT INTO receipt (receipt_number, id_employee, card_number, print_date, sum_total, vat) VALUES ($1, $2, $3, $4, $5, $6)',
