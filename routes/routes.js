@@ -107,7 +107,7 @@ routes.get(API_ROOT + '/storeProducts/:upc', auth.authorizeManager, store_produc
 
 //Додавати, редагувати, видаляти дані про товари у магазині
 routes.get(API_ROOT + '/storeProducts/:upc', store_product.getById)
-routes.post(API_ROOT + '/storeProducts/create', store_product.create)
+routes.post(API_ROOT + '/storeProducts/create', auth.authorizeManager, store_product.create)
 routes.put(API_ROOT + '/storeProducts/update/:upc', auth.authorizeManager, store_product.update)
 routes.delete(API_ROOT + '/storeProducts/delete/:upc', auth.authorizeManager, store_product.deleteById)
 
@@ -130,13 +130,13 @@ routes.get(API_ROOT + '/receipts/sumByPeriod/', receipt.getSumByPeriod)
 routes.get(API_ROOT + '/receipts/countByPeriod/:product_id', receipt.getCountByPeriod)
 
 //Здійснювати продаж товарів (додавання чеків)
-routes.post(API_ROOT + '/receipts/create', receipt.create)
+routes.post(API_ROOT + '/receipts/create', auth.authorizeCashier, receipt.create)
 
 //За номером чеку вивести усю інформацію про даний чек
 routes.get(API_ROOT + '/receipts/:receipt_number', receipt.getById)
 
 //Видаляти дані прo чеки
-// routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
+routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
 
 //- - - - - - - - - - Sales endpoints - - - - - - - - - -
 

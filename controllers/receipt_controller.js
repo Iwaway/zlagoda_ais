@@ -161,10 +161,25 @@ const getSumByNumber = async (receipt_number) => {
     return result.rows[0];
 }
 
+const deleteById = (request, response) => {
+    const receipt_number = request.params.receipt_number
+    if (!receipt_number) {
+        response.status(400).json({message: "Bad Params: receipt number is mandatory"})
+    }
+    pool.query('DELETE FROM receipt WHERE receipt_number = $1', [receipt_number], (error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).send(error.message)
+        }
+        response.status(200).send(`Receipt deleted with number: ${receipt_number}`)
+    })
+}
+
 module.exports = {
     create,
     getAllByCashier,
     getAllByPeriod,
+    deleteById,
     getSumByCashier,
     getSumByPeriod,
     getCountByPeriod,
