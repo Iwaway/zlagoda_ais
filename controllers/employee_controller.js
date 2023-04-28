@@ -62,29 +62,30 @@ const create = (request, response) => {
         id,
         surname,
         name,
-        role_id,
+        roleId,
         salary,
-        date_of_birth,
-        date_of_start,
-        phone_number,
+        dateOfBirth,
+        dateOfStart,
+        phoneNumber,
         city,
         street,
-        zip_code
+        zipCode
     } = request.body
     patronymic = patronymic ?? null
-    if (phone_number.length > 13) {
-        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    if (phoneNumber.length > 13) {
+        return response.status(400).json({message: "Bad Request: phone number can not be longer that 13"})
     }
-    if (underAgeValidate(date_of_birth)) {
-        response.status(400).json({message: "Bad Request: age must be not under 18"})
+    if (!utils.underAgeValidate(dateOfBirth)) {
+        return response.status(400).json({message: "Bad Request: age must be not under 18"})
     }
     pool.query('INSERT INTO employee (id_employee, empl_surname, empl_name, empl_patronymic, empl_role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code) VALUES ($12, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-        [surname, name, patronymic, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
+        [surname, name, patronymic, roleId, salary, dateOfBirth, dateOfStart, phoneNumber, city, street, zipCode, id], (error, results) => {
             if (error) {
                 console.log(error.message)
-                response.status(500).send(error.message)
+                response.status(500).json({message: error.message});
+            } else {
+                response.status(201).json({message: `Employee added with ID: ${id}`})
             }
-            response.status(201).send(`Employee added with ID: ${id}`)
         })
 }
 
@@ -106,10 +107,10 @@ const update = (request, response) => {
         zipCode
     } = request.body
     if (!surname || !name || !phoneNumber || !salary || !dateOfStart || !dateOfStart || !phoneNumber || !city || !street || !zipCode) {
-        return  response.status(400).json({message: "Bad Request: not all mandatory fields are provided"})
+        return response.status(400).json({message: "Bad Request: not all mandatory fields are provided"})
     }
     if (phoneNumber.length > 13) {
-        return  response.status(400).json({message: "Bad Request: phone number cannot be longer than 13"})
+        return response.status(400).json({message: "Bad Request: phone number cannot be longer than 13"})
     }
     if (!utils.underAgeValidate(dateOfBirth)) {
         return response.status(400).json({message: "Bad Request: age must be not under 18"})
@@ -132,14 +133,16 @@ const update = (request, response) => {
 const deleteById = (request, response) => {
     const id = request.params.id_employee
     if (!id) {
-        response.status(400).json({message: "Bad Params: employee id is mandatory"})
+        return response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }
     pool.query('DELETE FROM employee WHERE id_employee = $1', [id], (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message});
+        } else {
+            response.status(200).json({message: `Employee deleted with ID: ${id}`});
+
         }
-        response.status(200).send(`Employee deleted with ID: ${id}`)
     })
 }
 
