@@ -9,6 +9,7 @@ const customer = require('../controllers/customer_controller');
 const auth = require('../controllers/auth_controller');
 const receipt = require('../controllers/receipt_controller');
 const sale = require('../controllers/sale_controller');
+const query = require('../controllers/query_controller');
 
 const API_ROOT = '/zlagoda/api'
 
@@ -151,6 +152,11 @@ routes.post(API_ROOT + '/authenticate', auth.authenticate);
 routes.post(API_ROOT + '/register', auth.register);
 
 module.exports = routes;
+
+
+//- - - - - - - - - - Queries endpoints - - - - - - - - - -
+routes.get(API_ROOT + '/getCountByReceipt', query.getCountGroupingByReceipt)
+routes.get(API_ROOT + '/getLessByNumber/:number', query.getLessByNumber)
 
 //Manager
 // 4. Видруковувати звіти з інформацією про усіх працівників, постійних клієнтів,
