@@ -39,20 +39,21 @@ const getById = (request, response) => {
     })
 }
 
-const getNumberAndAddress = (request, response) => {
-    const {
+const searchBySurname = (request, response) => {
+    let {
         surname,
     } = request.body
     if (!surname) {
         response.status(400).json({message: "Bad Request: surname is mandatory"})
     }
-    pool.query('SELECT phone_number, city, street FROM employee WHERE empl_surname = $1',
-        [surname], (error, results) => {
+    pool.query(`SELECT * FROM employee WHERE empl_surname LIKE $1;`,
+        ['%' + surname + '%'], (error, results) => {
             if (error) {
                 console.log(error.message)
-                response.status(500).send(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json(results.rows)
             }
-            response.status(200).json(results.rows)
         })
 }
 
@@ -153,5 +154,5 @@ module.exports = {
     update,
     deleteById,
     getAllCashiers,
-    getNumberAndAddress
+    searchBySurname
 }

@@ -29,7 +29,7 @@ routes.put(API_ROOT + '/employees/update/:id_employee', auth.authorizeManager, e
 routes.delete(API_ROOT + '/employees/delete/:id_employee', auth.authorizeManager, employee.deleteById)
 
 //За прізвищем працівника знайти його телефон та адресу
-routes.get(API_ROOT + '/employees/shortinfo/', auth.authorizeManager, employee.getNumberAndAddress)
+routes.post(API_ROOT + '/employees/searchBySurname/', auth.authorizeManager, employee.searchBySurname)
 
 
 //- - - - - - - - - - Roles endpoints - - - - - - - - - -
