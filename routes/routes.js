@@ -84,7 +84,7 @@ routes.get(API_ROOT + '/customersBySurname', auth.authorizeCashier, customer.get
 routes.get(API_ROOT + '/customers/:cardNumber', auth.authorizeManager, customer.getById)
 routes.post(API_ROOT + '/customers/create', auth.authorizeCashierOrManager, customer.create)
 routes.put(API_ROOT + '/customers/update/:cardNumber', auth.authorizeCashierOrManager, customer.update)
-routes.delete(API_ROOT + '/api/customers/delete/:cardNumber', auth.authorizeManager, customer.deleteById)
+routes.delete(API_ROOT + '/customers/delete/:cardNumber', auth.authorizeManager, customer.deleteById)
 
 //- - - - - - - - - - Products in storage endpoints - - - - - - - - - -
 

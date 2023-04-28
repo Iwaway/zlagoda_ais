@@ -80,13 +80,13 @@ const create = (request, response) => {
         percentage
     } = request.body
     if (!cardNumber || !surname || !name || !phoneNumber || !percentage) {
-        response.status(400).json({message: "Bad Request: card number, surname, name, phone_number, percent is mandatory"})
+        return response.status(400).json({message: "Bad Request: card number, surname, name, phone_number, percent is mandatory"})
     }
     if (percentage < 0) {
-        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+        return response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
     }
     if (phoneNumber.length > 13) {
-        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+        return response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
     }
     patronymic = patronymic ?? null
     city = city ?? null
@@ -96,9 +96,10 @@ const create = (request, response) => {
         [surname, name, patronymic, phoneNumber, city, street, zipCode, percentage, cardNumber], (error, results) => {
             if (error) {
                 console.log(error.message)
-                response.status(500).send(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(201).json({message: `Customer card added with ID: ${cardNumber}`})
             }
-            response.status(201).send(`Customer card added with ID: ${cardNumber}`)
         })
 }
 
