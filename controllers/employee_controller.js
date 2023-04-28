@@ -1,5 +1,5 @@
 const {pool} = require("../db");
-const underAgeValidate = require("../utils/functions")
+const utils = require("../utils/functions")
 
 const getAll = (request, response) => {
     pool.query('SELECT * FROM employee ORDER BY empl_surname ASC', (error, results) => {
@@ -93,41 +93,37 @@ const update = (request, response) => {
     if (!id) {
         response.status(400).json({message: "Bad Params: employee id is mandatory"})
     }
-    let patronymic = request.body.patronymic
     const {
         surname,
         name,
-        role_id,
+        patronymic,
         salary,
-        date_of_birth,
-        date_of_start,
-        phone_number,
+        dateOfBirth,
+        dateOfStart,
+        phoneNumber,
         city,
         street,
-        zip_code
+        zipCode
     } = request.body
-    if (!surname || !name || !phone_number || !role_id || !salary || !date_of_birth || !date_of_start || !phone_number || !city || !street || !zip_code) {
-        response.status(400).json({message: "Bad Request: mandatory fields are null"})
+    if (!surname || !name || !phoneNumber || !salary || !dateOfStart || !dateOfStart || !phoneNumber || !city || !street || !zipCode) {
+        return  response.status(400).json({message: "Bad Request: not all mandatory fields are provided"})
     }
-    if (phone_number.length > 13) {
-        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
+    if (phoneNumber.length > 13) {
+        return  response.status(400).json({message: "Bad Request: phone number cannot be longer than 13"})
     }
-    if (underAgeValidate(date_of_birth)) {
-        response.status(400).json({message: "Bad Request: age must be not under 18"})
+    if (!utils.underAgeValidate(dateOfBirth)) {
+        return response.status(400).json({message: "Bad Request: age must be not under 18"})
     }
-    let query = 'UPDATE employee SET empl_surname = $1, empl_name = $2,';
-    if (patronymic) {
-        query += ` empl_patronymic = ${patronymic},`
-    }
-    query += ' empl_role_id = $3, salary = $4, date_of_birth = $5, date_of_start = $6, phone_number = $7, city = $8, street=$9, zip_code = $10 WHERE id_employee = $11';
+    let query = 'UPDATE employee SET empl_surname = $1, empl_name = $2, empl_patronymic = $3, salary = $4, date_of_birth = $5, date_of_start = $6, phone_number = $7, city = $8, street=$9, zip_code = $10 WHERE id_employee = $11';
     pool.query(
         query,
-        [surname, name, role_id, salary, date_of_birth, date_of_start, phone_number, city, street, zip_code, id], (error, results) => {
+        [surname, name, patronymic, salary, dateOfBirth, dateOfStart, phoneNumber, city, street, zipCode, id], (error, results) => {
             if (error) {
                 console.log(error.message)
-                response.status(500).send(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json({message: `Employee modified with ID: ${id}`})
             }
-            response.status(200).send(`Employee modified with ID: ${id}`)
         }
     )
 }

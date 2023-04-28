@@ -1,16 +1,12 @@
-function underAgeValidate(birthday){
-	var optimizedBirthday = birthday.replace(/-/g, "/");
-	var myBirthday = new Date(optimizedBirthday);
-	var currentDate = new Date().toJSON().slice(0,10)+' 01:00:00';
-	var myAge = ~~((Date.now(currentDate) - myBirthday) / (31557600000));
-
-	if(myAge < 18) {
-     	    return false;
-        }else{
-	    return true;
-	}
-} 
-
-module.exports = {
-    underAgeValidate,
+function underAgeValidate(birthday) {
+    const age = calculateAge(new Date(birthday));
+    return age >= 18;
 }
+
+function calculateAge(birthday) { // birthday is a date
+    const ageDifMs = Date.now() - birthday;
+    const ageDate = new Date(ageDifMs); // miliseconds from epoch
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+}
+
+module.exports = {underAgeValidate}

@@ -41,7 +41,10 @@ const getById = (request, response) => {
             console.log(error.message)
             response.status(500).send(error.message)
         }
-        response.status(200).json(results.rows)
+        if (!results.rows.length) {
+            response.status(404).send();
+        }
+        response.status(200).json(results.rows[0]);
     })
 }
 
