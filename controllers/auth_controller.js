@@ -122,6 +122,25 @@ const authorizeCashierPersonal = async (req, res, next) => {
     verifyTokenByPredicate(req, res, next, (decoded) => decoded.login === login);
 }
 
+const authorizeManagerOrCashierPersonal = async (req, res, next) => {
+    const employeeId = req.params.id_employee;
+    if (!employeeId) {
+        return res.status(500).json({message: 'id_employee in request params expected'});
+    }
+
+    const query = `SELECT login
+                   FROM employee
+                   WHERE id_employee = $1`;
+
+    const result = await pool.query(query, [employeeId]);
+    const login = result.rows[0].login
+    if (!login) {
+        return res.status(401).json({message: 'Unauthorized'});
+    }
+
+    verifyTokenByPredicate(req, res, next, (decoded) => decoded.login === login && (decoded.role === 'manager' || (decoded.role === 'cashier' && decoded.id === employeeId)));
+}
+
 const authorizeCashierOrManager = (req, res, next) => {
     verifyTokenByPredicate(req, res, next, (decoded) => decoded.role === 'cashier' || decoded.role === 'manager');
 }
@@ -160,5 +179,6 @@ module.exports = {
     authorizeCashier,
     authorizeCashierOrManager,
     authorizeCashierPersonal,
+    authorizeManagerOrCashierPersonal,
     addIdToParams
 }
