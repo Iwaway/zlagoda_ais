@@ -75,10 +75,10 @@ routes.delete('/products/delete/:id_product', auth.authorizeManager, product.del
 routes.get(API_ROOT + '/customers', auth.authorizeCashierOrManager, customer.getAll)
 
 //Отримати інформацію про усіх постійних клієнтів, що мають карту клієнта із певним відсотком, посортованих за прізвищем
-routes.get(API_ROOT + '/customersByPercent', auth.authorizeManager, customer.getAllByPercent)
+routes.post(API_ROOT + '/customers/searchByPercentage', auth.authorizeManager, customer.searchByPercent)
 
 //Отримати інформацію про усіх постійних клієнтів за прізвищем
-routes.get(API_ROOT + '/customersBySurname', auth.authorizeCashier, customer.getBySurname)
+routes.post(API_ROOT + '/customers/searchBySurname', auth.authorizeCashier, customer.searchBySurname)
 
 //Додавати, редагувати, видаляти дані про товари
 routes.get(API_ROOT + '/customers/:cardNumber', auth.authorizeManager, customer.getById)

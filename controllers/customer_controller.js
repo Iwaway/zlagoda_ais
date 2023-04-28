@@ -10,27 +10,6 @@ const getAll = (request, response) => {
     })
 }
 
-const getAllByPercent = (request, response) => {
-    const {
-        percent
-    } = request.body
-    if (!percent) {
-        response.status(400).json({message: "Bad Request: percent is mandatory"})
-    }
-
-    if (percent < 0) {
-        response.status(400).json({message: "Bad Request: percent cannot be less then 0"})
-    }
-    const percentFormatted = parseInt(percent)
-    pool.query('SELECT * FROM customer_card WHERE percent = $1 ORDER BY cust_surname ASC', [percentFormatted], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
-}
-
 const getById = (request, response) => {
     const cardNumber = request.params.cardNumber
     if (!cardNumber) {
@@ -46,23 +25,6 @@ const getById = (request, response) => {
         }
         response.status(200).json(results.rows[0]);
     })
-}
-
-const getBySurname = (request, response) => {
-    const {
-        surname
-    } = request.body
-    if (!surname) {
-        response.status(400).json({message: "Bad Request: surname is mandatory"})
-    }
-    pool.query('SELECT * FROM customer_card WHERE cust_surname = $1',
-        [surname], (error, results) => {
-            if (error) {
-                console.log(error.message)
-                response.status(500).send(error.message)
-            }
-            response.status(200).json(results.rows)
-        })
 }
 
 const create = (request, response) => {
@@ -165,12 +127,53 @@ const deleteById = (request, response) => {
     })
 }
 
+const searchBySurname = (request, response) => {
+    const {
+        surname
+    } = request.body
+    if (!surname) {
+        return response.status(400).json({message: "Bad Request: surname is mandatory"})
+    }
+    pool.query('SELECT * FROM customer_card WHERE cust_surname LIKE $1',
+        ['%' + surname + '%'], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json(results.rows)
+            }
+        })
+}
+
+const searchByPercent = (request, response) => {
+    const {
+        percentage
+    } = request.body
+    if (!percentage) {
+        return response.status(400).json({message: "Bad Request: percentage is mandatory in body"})
+    }
+
+    const percentageParsed = parseInt(percentage)
+    if (!percentageParsed ||  percentageParsed < 0) {
+        return response.status(400).json({message: "Bad Request: percentage must be a positive integer"})
+    }
+
+    pool.query('SELECT * FROM customer_card WHERE percent = $1 ORDER BY cust_surname ASC', [percentageParsed], (error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
+        }
+    })
+}
+
 module.exports = {
     getAll,
     getById,
     create,
     update,
     deleteById,
-    getAllByPercent,
-    getBySurname,
+    searchByPercent,
+    searchBySurname,
 }
