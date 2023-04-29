@@ -1,12 +1,13 @@
-const { pool } = require("../db");
+const {pool} = require("../db");
 
 const getAll = (request, response) => {
-    pool.query('SELECT * FROM category ORDER BY category_name ASC', (error, results) => {
+    pool.query('SELECT * FROM category ORDER BY category_name;', (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
         }
-        response.status(200).json(results.rows)
     })
 }
 
@@ -18,9 +19,12 @@ const getById = (request, response) => {
     pool.query('SELECT * FROM category WHERE category_number = $1', [id], (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message})
+        } else if (!results.rows.length) {
+            response.status(404).send();
+        } else {
+            response.status(200).json(results.rows[0])
         }
-        response.status(200).json(results.rows)
     })
 }
 
@@ -29,16 +33,17 @@ const create = (request, response) => {
         name
     } = request.body
     if (!name) {
-        response.status(400).json({message: "Bad Request: name is mandatory"})
+        return response.status(400).json({message: "Bad Request: name is mandatory"})
     }
     pool.query('INSERT INTO category (category_name) VALUES ($1)',
-    [name], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(201).send(`Category added with name: ${name}`)
-    })
+        [name], (error, result) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(201).json({message: `Category added with name: ${name}`});
+            }
+        })
 }
 
 const update = (request, response) => {
@@ -54,12 +59,14 @@ const update = (request, response) => {
     }
     pool.query(
         'UPDATE category SET category_name = $1 WHERE category_number = $2',
-        [name, id], (error, results) => {
+        [name, id], (error) => {
             if (error) {
                 console.log(error.message)
-                response.status(500).send(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json({message: `Category modified with number: ${id}`});
             }
-            response.status(200).send(`Category modified with name: ${name}}`)
+
         }
     )
 }
@@ -69,12 +76,13 @@ const deleteById = (request, response) => {
     if (!id) {
         response.status(400).json({message: "Bad Params: category number is mandatory"})
     }
-    pool.query('DELETE FROM category WHERE category_number = $1', [id], (error, results) => {
+    pool.query('DELETE FROM category WHERE category_number = $1', [id], (error) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json({message: `Category deleted with ID: ${id}`})
         }
-        response.status(200).send(`Category deleted with ID: ${id}`)
     })
 }
 

@@ -22,8 +22,7 @@ routes.get(API_ROOT + '/employees', auth.authorizeManager, employee.getAll)
 routes.get(API_ROOT + '/employees/cashiers', employee.getAllCashiers)
 
 //Додавати, редагувати, видаляти дані про працівників
-routes.get(API_ROOT + '/cashiers/me', auth.addIdToParams, employee.getById)
-routes.get(API_ROOT + '/employees/:id_employee', auth.authorizeManager, employee.getById)
+routes.get(API_ROOT + '/employees/:id_employee', auth.authorizeManagerOrCashierPersonal, employee.getById)
 routes.post(API_ROOT + '/employees/create', auth.authorizeManager, employee.create)
 routes.put(API_ROOT + '/employees/update/:id_employee', auth.authorizeManager, employee.update)
 routes.delete(API_ROOT + '/employees/delete/:id_employee', auth.authorizeManager, employee.deleteById)
@@ -42,13 +41,13 @@ routes.get(API_ROOT + '/roles/:id', role.getById)
 //- - - - - - - - - - Categories endpoints - - - - - - - - - -
 
 //Отримати інформацію про усі категорії, відсортовані за назвою
-routes.get(API_ROOT + '/categories', auth.authorizeManager, category.getAll)
+routes.get(API_ROOT + '/categories', auth.authorizeCashierOrManager, category.getAll)
 
 //Додавати, редагувати, видаляти дані про категорії товарів
-routes.get(API_ROOT + '/category/:category_number', auth.authorizeManager, category.getById)
-routes.post(API_ROOT + '/category/create', auth.authorizeManager, category.create)
-routes.put(API_ROOT + '/category/update/:category_number', auth.authorizeManager, category.update)
-routes.delete(API_ROOT + '/category/delete/:category_number', auth.authorizeManager, category.deleteById)
+routes.get(API_ROOT + '/categories/:category_number', auth.authorizeCashierOrManager, category.getById)
+routes.post(API_ROOT + '/categories/create', auth.authorizeManager, category.create)
+routes.put(API_ROOT + '/categories/update/:category_number', auth.authorizeManager, category.update)
+routes.delete(API_ROOT + '/categories/delete/:category_number', auth.authorizeManager, category.deleteById)
 
 
 //- - - - - - - - - - Product endpoints - - - - - - - - - -
@@ -81,8 +80,8 @@ routes.post(API_ROOT + '/customers/searchByPercentage', auth.authorizeManager, c
 routes.post(API_ROOT + '/customers/searchBySurname', auth.authorizeCashier, customer.searchBySurname)
 
 //Додавати, редагувати, видаляти дані про товари
-routes.get(API_ROOT + '/customers/:cardNumber', auth.authorizeManager, customer.getById)
-routes.post(API_ROOT + '/customers/create', auth.authorizeCashierOrManager, customer.create)
+routes.get(API_ROOT + '/customers/:cardNumber', auth.authorizeCashierOrManager, customer.getById)
+routes.post(API_ROOT + '/customers/create', auth.authorizeManager, customer.create)
 routes.put(API_ROOT + '/customers/update/:cardNumber', auth.authorizeCashierOrManager, customer.update)
 routes.delete(API_ROOT + '/customers/delete/:cardNumber', auth.authorizeManager, customer.deleteById)
 
@@ -137,7 +136,7 @@ routes.post(API_ROOT + '/receipts/create', auth.authorizeCashier, receipt.create
 routes.get(API_ROOT + '/receipts/:receipt_number', auth.authorizeCashier, receipt.getById)
 
 //Видаляти дані прo чеки
-routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
+// routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
 
 //- - - - - - - - - - Sales endpoints - - - - - - - - - -
 

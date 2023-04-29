@@ -1,13 +1,14 @@
-const { pool } = require("../db");
+const {pool} = require("../db");
 
 const getCountGroupingByReceipt = async (request, response) => {
     const query = 'SELECT receipt.receipt_number, SUM(sale.product_number) AS productNumber FROM receipt LEFT JOIN sale ON receipt.receipt_number = sale.receipt_number GROUP BY receipt.receipt_number'
     await pool.query(query, (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
         }
-        response.status(200).json(results.rows)
     })
 }
 
@@ -21,9 +22,10 @@ const getLessByNumber = async (request, response) => {
     await pool.query(query, [number], (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
         }
-        response.status(200).json(results.rows)
     })
 }
 

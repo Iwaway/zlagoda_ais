@@ -18,12 +18,13 @@ const getById = (request, response) => {
     pool.query('SELECT * FROM customer_card WHERE card_number = $1', [cardNumber], (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        if (!results.rows.length) {
+            response.status(500).json({message: error.message})
+        } else if (!results.rows.length) {
             response.status(404).send();
+        } else {
+            response.status(200).json(results.rows[0]);
         }
-        response.status(200).json(results.rows[0]);
+
     })
 }
 
@@ -154,7 +155,7 @@ const searchByPercent = (request, response) => {
     }
 
     const percentageParsed = parseInt(percentage)
-    if (!percentageParsed ||  percentageParsed < 0) {
+    if (!percentageParsed || percentageParsed < 0) {
         return response.status(400).json({message: "Bad Request: percentage must be a positive integer"})
     }
 

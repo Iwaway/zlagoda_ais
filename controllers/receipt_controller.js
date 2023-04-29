@@ -1,4 +1,4 @@
-const { pool } = require("../db");
+const {pool} = require("../db");
 
 const getById = (request, response) => {
     const receipt_number = request.params.receipt_number
@@ -8,9 +8,11 @@ const getById = (request, response) => {
     pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product WHERE receipt.receipt_number = $1 ORDER BY product_name ASC', [receipt_number], (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
         }
-        response.status(200).json(results.rows)
+
     })
 }
 
@@ -27,13 +29,15 @@ const getAllByCashier = (request, response) => {
         response.status(400).json({message: "Bad Params: id employee is mandatory"})
     }
     pool.query('SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product WHERE id_employee = $1 AND print_date > $2 AND print_date < $3 ORDER BY product_name ASC',
-    [id_employee, begin, end] ,(error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
+        [id_employee, begin, end], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json(results.rows)
+            }
+
+        })
 }
 
 const getSumByCashier = (request, response) => {
@@ -49,13 +53,15 @@ const getSumByCashier = (request, response) => {
         response.status(400).json({message: "Bad Params: id employee is mandatory"})
     }
     pool.query('SELECT SUM(sum_total) FROM receipt WHERE id_employee = $1 AND print_date > $2 AND print_date < $3',
-    [id_employee, begin, end] ,(error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
+        [id_employee, begin, end], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json(results.rows);
+            }
         }
-        response.status(200).json(results.rows)
-    })
+    )
 }
 
 const getSumByPeriod = (request, response) => {
@@ -67,13 +73,14 @@ const getSumByPeriod = (request, response) => {
         response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
     }
     pool.query('SELECT SUM(sum_total) FROM receipt WHERE print_date > $1 AND print_date < $2',
-    [begin, end] ,(error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
+        [begin, end], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json(results.rows)
+            }
+        })
 }
 
 const getAllByPeriod = (request, response) => {
@@ -87,13 +94,15 @@ const getAllByPeriod = (request, response) => {
     const query = 'SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product WHERE print_date > $1 AND print_date < $2 ORDER BY product_name ASC'
     console.log(query)
     pool.query(query,
-    [begin, end] ,(error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
+        [begin, end], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json(results.rows)
+            }
+
+        })
 }
 
 const getCountByPeriod = (request, response) => {
@@ -109,13 +118,15 @@ const getCountByPeriod = (request, response) => {
         response.status(400).json({message: "Bad Params: product id is mandatory"})
     }
     pool.query('SELECT COUNT(sp.id_product) FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc WHERE print_date > $1 AND print_date < $2',
-    [begin, end] ,(error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(200).json(results.rows)
-    })
+        [begin, end], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json(results.rows)
+            }
+
+        })
 }
 
 const create = async (request, response) => {
@@ -127,7 +138,7 @@ const create = async (request, response) => {
         date,
     } = request.body
     card_number = card_number ?? null
-    if (card_number){
+    if (card_number) {
         percent = await getPercentByCustomer(card_number)
     }
     if (!receipt_number || !id_employee || !date) {
@@ -135,13 +146,13 @@ const create = async (request, response) => {
     }
     const vat = 0
     pool.query('INSERT INTO receipt (receipt_number, id_employee, card_number, print_date, sum_total, vat) VALUES ($1, $2, $3, $4, $5, $6)',
-    [receipt_number, id_employee, card_number, date, 0, vat], (error, results) => {
-        if (error) {
-            console.log(error.message)
-            response.status(500).send(error.message)
-        }
-        response.status(201).send(`Receipt added with number: ${receipt_number}`)
-    })
+        [receipt_number, id_employee, card_number, date, 0, vat], (error, results) => {
+            if (error) {
+                console.log(error.message)
+                response.status(500).json({message: error.message})
+            }
+            response.status(201).send(`Receipt added with number: ${receipt_number}`)
+        })
 }
 
 const getPercentByCustomer = async (card_number) => {
@@ -165,7 +176,7 @@ const deleteById = (request, response) => {
     pool.query('DELETE FROM receipt WHERE receipt_number = $1', [receipt_number], (error, results) => {
         if (error) {
             console.log(error.message)
-            response.status(500).send(error.message)
+            response.status(500).json({message: error.message})
         }
         response.status(200).send(`Receipt deleted with number: ${receipt_number}`)
     })
