@@ -56,16 +56,16 @@ routes.delete(API_ROOT + '/categories/delete/:category_number', auth.authorizeMa
 routes.get(API_ROOT + '/products', auth.authorizeCashierOrManager, product.getAll)
 
 //Здійснити пошук усіх товарів, що належать певній категорії, відсортованих за назвою
-routes.get(API_ROOT + '/productsByCategory', auth.authorizeCashierOrManager, product.getAllByCategory)
+routes.get(API_ROOT + '/products/category/:categoryNumber', auth.authorizeCashierOrManager, product.getAllByCategory)
 
 //Здійснити пошук товарів за назвою
-routes.get('/productsByName', auth.authorizeCashier, product.getByName)
+routes.post(API_ROOT + '/products/searchByName', auth.authorizeCashierOrManager, product.getByName)
 
 //Додавати, редагувати, видаляти дані про товари
-routes.get('/products/:id_product', auth.authorizeManager, product.getById)
-routes.post('/products/create', auth.authorizeManager, product.create)
-routes.put('/products/update/:id_product', auth.authorizeManager, product.update)
-routes.delete('/products/delete/:id_product', auth.authorizeManager, product.deleteById)
+routes.get(API_ROOT + '/products/:id_product', auth.authorizeManager, product.getById)
+routes.post(API_ROOT + '/products/create', auth.authorizeManager, product.create)
+routes.put(API_ROOT + '/products/update/:id_product', auth.authorizeManager, product.update)
+routes.delete(API_ROOT + '/products/delete/:id_product', auth.authorizeManager, product.deleteById)
 
 
 //- - - - - - - - - - Customer card endpoints - - - - - - - - - -
