@@ -88,7 +88,7 @@ routes.delete(API_ROOT + '/customers/delete/:cardNumber', auth.authorizeManager,
 //- - - - - - - - - - Products in storage endpoints - - - - - - - - - -
 
 //Отримати інформацію про усі товари в магазині, відсортовані за назвою
-routes.get(API_ROOT + '/storeProducts', auth.authorizeCashier, store_product.getAllNames)
+routes.get(API_ROOT + '/storeProductsSortedByName', auth.authorizeCashierOrManager, store_product.getAllNames)
 
 //Отримати інформацію про усі акційні товари, відсортовані за кількістю одиниць товару
 routes.get(API_ROOT + '/storeProducts/promotion', auth.authorizeCashierOrManager, store_product.getAllProm)
@@ -97,7 +97,8 @@ routes.get(API_ROOT + '/storeProducts/promotion', auth.authorizeCashierOrManager
 routes.get(API_ROOT + '/storeProducts/nonPromotion', auth.authorizeCashierOrManager, store_product.getAllNonProm)
 
 //Отримати інформацію про усі товари в магазині, відсортовані за кількістю
-routes.get(API_ROOT + '/storeProducts', auth.authorizeManager, store_product.getAll)
+routes.get(API_ROOT + '/storeProducts', auth.authorizeCashierOrManager, store_product.getAll)
+routes.post(API_ROOT + '/storeProducts/searchByName', auth.authorizeCashierOrManager, store_product.searchByName)
 
 //За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару
 routes.get(API_ROOT + '/storeProducts/:upc', auth.authorizeCashier, store_product.getById)

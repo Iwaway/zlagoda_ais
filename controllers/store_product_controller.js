@@ -1,27 +1,89 @@
 const {response} = require("express");
 const {pool} = require("../db");
 
+const PROMOTIONAL_PRODUCTS_THRESHOLD = 15;
+
 const getAllNames = (request, response) => {
-    pool.query('SELECT product.product_name, upc, upc_prom, selling_price, products_number, promotion_product, store_product.id_product FROM store_product, product WHERE (store_product.id_product = product.id_product) ORDER BY product.product_name ASC', (error, results) => {
+
+    const query = `
+        SELECT product.product_name,
+               upc,
+               upc_prom,
+               selling_price,
+               products_number,
+               promotion_product,
+               store_product.id_product
+        FROM store_product,
+             product
+        WHERE (store_product.id_product = product.id_product)
+        ORDER BY product.product_name`
+
+    pool.query(query, (error, results) => {
         if (error) {
             console.log(error.message)
             response.status(500).json({message: error.message})
         } else {
             response.status(200).json(results.rows)
         }
-
     })
 }
 
 const getAll = (request, response) => {
-    pool.query('SELECT * FROM store_product ORDER BY products_number DESC', (error, results) => {
+
+    const query = `
+        SELECT SP.upc,
+               SP.upc_prom,
+               SP.id_product,
+               P.product_name,
+               SP.id_product,
+               SP.selling_price,
+               SP.products_number,
+               SP.promotion_product
+        FROM store_product SP
+                 INNER JOIN product P
+                            ON P.id_product = SP.id_product
+        ORDER BY products_number DESC`
+
+    pool.query(query, (error, results) => {
         if (error) {
             console.log(error.message)
             response.status(500).json({message: error.message})
         } else {
             response.status(200).json(results.rows)
         }
+    })
+}
 
+const searchByName = (request, response) => {
+
+    const search = request.body.name;
+
+    if (!search) {
+        return response.status(400).json({message: 'Name to search by is mandatory'})
+    }
+
+    const query = `
+        SELECT SP.upc,
+               SP.upc_prom,
+               SP.id_product,
+               P.product_name,
+               SP.id_product,
+               SP.selling_price,
+               SP.products_number,
+               SP.promotion_product
+        FROM store_product SP
+                 INNER JOIN product P
+                            ON P.id_product = SP.id_product
+        WHERE product_name LIKE $1
+        ORDER BY products_number DESC`
+
+    pool.query(query, ['%' + search + '%'], (error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
+        }
     })
 }
 
@@ -33,7 +95,6 @@ const getAllProm = (request, response) => {
         } else {
             response.status(200).json(results.rows)
         }
-
     })
 }
 
@@ -45,7 +106,6 @@ const getAllNonProm = (request, response) => {
         } else {
             response.status(200).json(results.rows)
         }
-
     })
 }
 
@@ -61,7 +121,6 @@ const getById = (request, response) => {
         } else {
             response.status(200).json(results.rows)
         }
-
     })
 }
 
@@ -77,7 +136,6 @@ const getByIdAll = (request, response) => {
         } else {
             response.status(200).json(results.rows)
         }
-
     })
 }
 
@@ -103,8 +161,9 @@ const create = async (request, response) => {
             if (error) {
                 console.log(error.message)
                 response.status(500).json({message: error.message})
+            } else {
+                response.status(201).json({message: `Product added to store with upc: ${upc}`})
             }
-            response.status(201).send(`Product added to store with upc: ${upc}`)
         })
 }
 
@@ -182,6 +241,7 @@ const deleteById = (request, response) => {
 module.exports = {
     getAllNames,
     getAll,
+    searchByName,
     getByIdAll,
     getById,
     create,
