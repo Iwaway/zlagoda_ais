@@ -169,6 +169,12 @@ const searchByPercent = (request, response) => {
     })
 }
 
+const getDiscountPercentageByCardNumber = async (cardNumber) => {
+    const query = 'SELECT percent FROM customer_card WHERE card_number = $1'
+    const result = await pool.query(query, [cardNumber]);
+    return result.rows[0]?.percent
+}
+
 module.exports = {
     getAll,
     getById,
@@ -177,4 +183,5 @@ module.exports = {
     deleteById,
     searchByPercent,
     searchBySurname,
+    getDiscountPercentageByCardNumber
 }

@@ -1,8 +1,6 @@
 const {response} = require("express");
 const {pool} = require("../db");
 
-const PROMOTIONAL_PRODUCTS_THRESHOLD = 15;
-
 const getAllNames = (request, response) => {
 
     const query = `
@@ -112,7 +110,7 @@ const getAllNonProm = (request, response) => {
 const getById = (request, response) => {
     const upc = request.params.upc
     if (!upc) {
-        response.status(400).json({message: "Bad Params: upc is mandatory"})
+        return response.status(400).json({message: "Bad Params: upc is mandatory"})
     }
     pool.query('SELECT selling_price, products_number FROM store_product WHERE upc = $1', [upc], (error, results) => {
         if (error) {
@@ -129,42 +127,143 @@ const getByIdAll = (request, response) => {
     if (!upc) {
         response.status(400).json({message: "Bad Params: upc is mandatory"})
     }
-    pool.query('SELECT selling_price, products_number, product.product_name, product.characteristics FROM store_product, product WHERE (store_product.id_product = product.id_product) AND upc = $1', [upc], (error, results) => {
+    const query = `
+        SELECT SP.upc,
+               SP.upc_prom,
+               SP.id_product,
+               P.product_name,
+               SP.id_product,
+               SP.selling_price,
+               SP.products_number,
+               SP.promotion_product
+        FROM store_product SP
+                 INNER JOIN product P
+                            ON P.id_product = SP.id_product
+        WHERE upc = $1`
+
+    pool.query(query, [upc], (error, results) => {
         if (error) {
             console.log(error.message)
             response.status(500).json({message: error.message})
+        } else if (results.rows.length) {
+            response.status(200).json(results.rows[0])
         } else {
-            response.status(200).json(results.rows)
+            response.status(404).send();
         }
     })
 }
 
 const create = async (request, response) => {
-    let upc_prom = request.body.upc_prom
     const {
         upc,
-        id_product,
-        price,
-        number,
-        isPromotional
+        id,
+        price
     } = request.body
-    upc_prom = upc_prom ?? null
-    if (!upc || !id_product || !price || !number || !isPromotional) {
-        response.status(400).json({message: "Bad Request: upc, id_product, price, number, isPromotional are mandatory"})
+    if (!upc || !id || !price) {
+        return response.status(400).json({message: "Bad Request: upc, id and price are mandatory"})
     }
-    if (price < 0 || number < 0) {
-        response.status(400).json({message: "Bad Request: price or number cannot be less then 0"})
+    if (price < 0) {
+        return response.status(400).json({message: "Bad Request: selling price cannot be less then 0"})
     }
-    await changePriceIfExist(id_product, price)
-    pool.query('INSERT INTO store_product (upc, upc_prom, id_product, selling_price, products_number, promotion_product) VALUES ($1, $2, $3, $4, $5, $6)',
-        [upc, upc_prom, id_product, price, number, isPromotional], (error, results) => {
+    await changePriceIfExist(id, price)
+    pool.query('INSERT INTO store_product (upc, id_product, selling_price, products_number, promotion_product) VALUES ($1, $2, $3, $4, $5)',
+        [upc, id, price, 0, false], (error, results) => {
             if (error) {
                 console.log(error.message)
                 response.status(500).json({message: error.message})
             } else {
                 response.status(201).json({message: `Product added to store with upc: ${upc}`})
             }
-        })
+        }
+    );
+}
+
+const putOnPromotion = async (request, response) => {
+    const upc = request.params.upc;
+    const {count, id, price, upcPromotional} = request.body;
+
+    if (!count || !id || !price || !upcPromotional) {
+        return response.status(400).json({message: "Bad Request: id, upcPromotional, price and count of product to be put on promotion is mandatory in body"})
+    }
+
+    const lowerProductCountQuery = `
+        UPDATE store_product
+        SET products_number = products_number - $1
+        WHERE upc = $2
+          AND products_number >= $1`
+
+    const updated = await pool.query(lowerProductCountQuery, [count, upc]);
+    if (!updated.rowCount) {
+        return response.status(500).send();
+    }
+
+    const createIfNotExistsQuery = `
+        INSERT INTO store_product (upc, id_product, selling_price, products_number, promotion_product)
+        VALUES ($1, $2, 0, 0, true)
+        ON CONFLICT DO NOTHING`
+    const created = await pool.query(createIfNotExistsQuery, [upcPromotional, id]);
+
+    if (!created.rowsAffected) {
+        const linkProductToPromotionalQuery = `
+            UPDATE store_product
+            SET upc_prom = $1
+            WHERE upc = $2`
+        await pool.query(linkProductToPromotionalQuery, [upcPromotional, upc])
+    }
+
+    const promotionalPrice = calculatePromotionalPrice(price)
+    const updatePromotionalQuery = `
+        UPDATE store_product
+        SET selling_price   = $1,
+            products_number = products_number + $2
+        WHERE upc = $3`;
+    pool.query(updatePromotionalQuery, [promotionalPrice, count, upcPromotional], (error, results) => {
+        if (error) {
+            response.status(500).json({message: error});
+        } else {
+            response.status(200).json({message: `Successfully put on promotoion ${count} units of product ${upc}`})
+        }
+    })
+}
+
+const registerReception = async (request, response) => {
+    const {
+        id,
+        count,
+        price
+    } = request.body;
+
+    if (!id || !count || !price || !parseInt(count) || !parseFloat(price)) {
+        return response.status(400).json({message: 'Bad params: id, count and price are mandatory'})
+    }
+
+    const updateNonPromotionalQuery = `
+        UPDATE store_product
+        SET selling_price   = $1,
+            products_number = products_number + $2
+        WHERE id_product = $3
+          AND promotion_product = false`
+
+    const nonPromotionalUpdated = await pool.query(updateNonPromotionalQuery, [price, count, id]);
+    if (nonPromotionalUpdated.rowsAffected === 0) {
+        return response.status(404).json({message: `Store product with id_product ${id} was not found`})
+    }
+
+    const promotionalPrice = calculatePromotionalPrice(price);
+    const updatePromotionalQuery = `
+        UPDATE store_product
+        SET selling_price = $1
+        WHERE id_product = $2
+          AND promotion_product = true`
+
+    pool.query(updatePromotionalQuery, [promotionalPrice, id], (error, result) => {
+        if (error) {
+            console.log(error);
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json({message: `Reception of product with id ${id} registered successfully`})
+        }
+    });
 }
 
 const getByProductIdAll = async (id_product) => {
@@ -218,8 +317,9 @@ const update = (request, response) => {
             if (error) {
                 console.log(error.message)
                 response.status(500).json({message: error.message})
+            } else {
+                response.status(200).json({message: `Product modified in store with upc: ${upc}`})
             }
-            response.status(200).send(`Product modified in store with upc: ${upc}`)
         }
     )
 }
@@ -233,18 +333,25 @@ const deleteById = (request, response) => {
         if (error) {
             console.log(error.message)
             response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json({message: `Product in store deleted with upc: ${upc}`})
         }
-        response.status(200).send(`Product in store deleted with upc: ${upc}`)
     })
+}
+
+function calculatePromotionalPrice(initial) {
+    return (initial * 0.8).toFixed(4);
 }
 
 module.exports = {
     getAllNames,
     getAll,
     searchByName,
+    registerReception,
     getByIdAll,
     getById,
     create,
+    putOnPromotion,
     update,
     deleteById,
     getAllProm,

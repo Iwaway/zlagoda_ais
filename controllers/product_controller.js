@@ -23,6 +23,46 @@ const getAll = (request, response) => {
     })
 }
 
+const getUnregistered = (request, response) => {
+
+    const query = `
+        SELECT *
+        FROM product P
+        WHERE NOT EXISTS (SELECT *
+                          FROM store_product SP
+                          WHERE P.id_product = SP.id_product)
+        ORDER BY product_name`
+
+    pool.query(query, (error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
+        }
+    })
+}
+
+const getRegistered = (request, response) => {
+
+    const query = `
+        SELECT *
+        FROM product P
+        WHERE EXISTS (SELECT *
+                      FROM store_product SP
+                      WHERE P.id_product = SP.id_product)
+        ORDER BY product_name`
+
+    pool.query(query, (error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
+        }
+    })
+}
+
 const getAllByCategory = (request, response) => {
     const categoryNumber = request.params['categoryNumber']
     if (!categoryNumber) {
@@ -149,6 +189,8 @@ const deleteById = (request, response) => {
 
 module.exports = {
     getAll,
+    getUnregistered,
+    getRegistered,
     getById,
     create,
     update,

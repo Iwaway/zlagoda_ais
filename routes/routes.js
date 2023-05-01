@@ -54,6 +54,8 @@ routes.delete(API_ROOT + '/categories/delete/:category_number', auth.authorizeMa
 
 //Отримати інформацію про усі товари, відсортовані за назвою
 routes.get(API_ROOT + '/products', auth.authorizeCashierOrManager, product.getAll)
+routes.get(API_ROOT + '/products/unregistered', auth.authorizeManager, product.getUnregistered)
+routes.get(API_ROOT + '/products/registered', auth.authorizeManager, product.getRegistered)
 
 //Здійснити пошук усіх товарів, що належать певній категорії, відсортованих за назвою
 routes.get(API_ROOT + '/products/category/:categoryNumber', auth.authorizeCashierOrManager, product.getAllByCategory)
@@ -62,7 +64,7 @@ routes.get(API_ROOT + '/products/category/:categoryNumber', auth.authorizeCashie
 routes.post(API_ROOT + '/products/searchByName', auth.authorizeCashierOrManager, product.getByName)
 
 //Додавати, редагувати, видаляти дані про товари
-routes.get(API_ROOT + '/products/:id_product', auth.authorizeManager, product.getById)
+routes.get(API_ROOT + '/products/:id_product', auth.authorizeCashierOrManager, product.getById)
 routes.post(API_ROOT + '/products/create', auth.authorizeManager, product.create)
 routes.put(API_ROOT + '/products/update/:id_product', auth.authorizeManager, product.update)
 routes.delete(API_ROOT + '/products/delete/:id_product', auth.authorizeManager, product.deleteById)
@@ -100,69 +102,56 @@ routes.get(API_ROOT + '/storeProducts/nonPromotion', auth.authorizeCashierOrMana
 routes.get(API_ROOT + '/storeProducts', auth.authorizeCashierOrManager, store_product.getAll)
 routes.post(API_ROOT + '/storeProducts/searchByName', auth.authorizeCashierOrManager, store_product.searchByName)
 
-//За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару
-routes.get(API_ROOT + '/storeProducts/:upc', auth.authorizeCashier, store_product.getById)
-
-//За UPC-товару знайти ціну продажу товару, кількість наявних одиниць товару, назву та характеристики товару
-routes.get(API_ROOT + '/storeProducts/:upc', auth.authorizeManager, store_product.getByIdAll)
-
 //Додавати, редагувати, видаляти дані про товари у магазині
-routes.get(API_ROOT + '/storeProducts/:upc', store_product.getById)
 routes.post(API_ROOT + '/storeProducts/create', auth.authorizeManager, store_product.create)
+routes.post(API_ROOT + '/storeProducts/registerReception', auth.authorizeManager, store_product.registerReception)
+routes.post(API_ROOT + '/storeProducts/putOnPromotion/:upc', auth.authorizeManager, store_product.putOnPromotion)
 routes.put(API_ROOT + '/storeProducts/update/:upc', auth.authorizeManager, store_product.update)
 routes.delete(API_ROOT + '/storeProducts/delete/:upc', auth.authorizeManager, store_product.deleteById)
+routes.get(API_ROOT + '/storeProducts/:upc', auth.authorizeManager, store_product.getByIdAll)
 
 
 //- - - - - - - - - - Receipts endpoints - - - - - - - - - -
 
-//Отримати інформацію про усі чеки, створені певним касиром за певний період часу
-routes.get(API_ROOT + '/receipts/:id_employee', auth.authorizeManager, receipt.getAllByCashier)
+
 
 //Отримати інформацію про усі чеки, створені усіма касирами за певний період часу
-routes.get(API_ROOT + '/receipts/', auth.authorizeManager, receipt.getAllByPeriod)
-
-//Визначити загальну суму проданих товарів з чеків, створених певним касиром за певний період часу
-routes.get(API_ROOT + '/receipts/sumByCashier/:id_employee', auth.authorizeManager, receipt.getSumByCashier)
-
-//Визначити загальну суму проданих товарів з чеків, створених усіма касиром за певний період часу
-routes.get(API_ROOT + '/receipts/sumByPeriod/', auth.authorizeManager, receipt.getSumByPeriod)
-
-//Визначити загальну кількість одиниць певного товару, проданого за певний період часу
-routes.get(API_ROOT + '/receipts/countByPeriod/:product_id', auth.authorizeManager, receipt.getCountByPeriod)
+routes.post(API_ROOT + '/receipts/', auth.addIdToBody, auth.authorizeManagerOrCashierPersonal, receipt.getAllByPeriod)
 
 //Здійснювати продаж товарів (додавання чеків)
 routes.post(API_ROOT + '/receipts/create', auth.authorizeCashier, receipt.create)
 
+//Визначити загальну суму проданих товарів з чеків, створених певним касиром за певний період часу
+routes.post(API_ROOT + '/receipts/sumByCashier/:id_employee', auth.authorizeManagerOrCashierPersonal, receipt.getSumByCashier)
+
+//Визначити загальну суму проданих товарів з чеків, створених усіма касиром за певний період часу
+routes.post(API_ROOT + '/receipts/sumByPeriod/', auth.authorizeManager, receipt.getSumByPeriod)
+
+//Переглянути список усіх чеків, що створив касир за цей день;
+// !!!!!!!!!!!!!!!!
+routes.get(API_ROOT + '/receipts/today/cashiers/:id_employee', auth.authorizeManagerOrCashierPersonal, receipt.getSumByPeriod)
+
+//Визначити загальну кількість одиниць певного товару, проданого за певний період часу
+routes.post(API_ROOT + '/receipts/ofPeriod/products/:product_id', auth.authorizeManager, receipt.getCountByPeriod)
+
+//Отримати інформацію про усі чеки, створені певним касиром за певний період часу
+routes.post(API_ROOT + '/receipts/ofPeriod/cashiers/:id_employee', auth.authorizeManagerOrCashierPersonal, receipt.getAllByCashier)
+
 //За номером чеку вивести усю інформацію про даний чек
-routes.get(API_ROOT + '/receipts/:receipt_number', auth.authorizeCashier, receipt.getById)
-
-//Видаляти дані прo чеки
-// routes.delete(API_ROOT + '/receipts/delete/:receipt_number', auth.authorizeManager, receipt.deleteById)
-
-//- - - - - - - - - - Sales endpoints - - - - - - - - - -
-
-//Здійснювати продаж товарів (додавання чеків)
-routes.post(API_ROOT + '/sales/create', auth.authorizeCashier, sale.create);
-
-routes.post(API_ROOT + '/sales/createMany', auth.authorizeCashier, sale.createMany);
+routes.post(API_ROOT + '/receipts/:receipt_number', auth.authorizeCashier, receipt.getById)
 
 //- - - - - - - - - - Authentication endpoints - - - - - - - - - -
 
 routes.post(API_ROOT + '/authenticate', auth.authenticate);
 routes.post(API_ROOT + '/register', auth.register);
 
-module.exports = routes;
-
-
 //- - - - - - - - - - Queries endpoints - - - - - - - - - -
+
 routes.get(API_ROOT + '/getCountByReceipt', query.getCountGroupingByReceipt)
 routes.get(API_ROOT + '/getLessByNumber/:number', query.getLessByNumber)
+
+module.exports = routes;
 
 //Manager
 // 4. Видруковувати звіти з інформацією про усіх працівників, постійних клієнтів,
 // категорії товарів, товари, товари у магазині, чеки;
-
-//Cashier
-// 9. Переглянути список усіх чеків, що створив касир за цей день;
-// 10. Переглянути список усіх чеків, що створив касир за певний період часу;
-// 15. Можливість отримати усю інформацію про себе.

@@ -123,7 +123,7 @@ const authorizeCashierPersonal = async (req, res, next) => {
 }
 
 const authorizeManagerOrCashierPersonal = async (req, res, next) => {
-    const employeeId = req.params.id_employee;
+    const employeeId = req.body.employeeId;
     if (!employeeId) {
         return res.status(500).json({message: 'id_employee in request params expected'});
     }
@@ -163,11 +163,11 @@ const verifyTokenByPredicate = (req, res, next, predicate) => {
     }
 };
 
-const addIdToParams = (req, res, next) => {
+const addIdToBody = (req, res, next) => {
     const decoded = jwt.decode(req.headers['authorization']?.substring(7))
     console.log(decoded);
     if (decoded.id) {
-        req.params.id_employee = decoded.id;
+        req.body.employeeId = decoded.id;
     }
     next();
 }
@@ -180,5 +180,5 @@ module.exports = {
     authorizeCashierOrManager,
     authorizeCashierPersonal,
     authorizeManagerOrCashierPersonal,
-    addIdToParams
+    addIdToBody
 }

@@ -1,4 +1,6 @@
 const {pool} = require("../db");
+const {validateSales, createSaleRecord} = require("./sale_controller");
+const {getDiscountPercentageByCardNumber} = require("./customer_controller");
 
 const getById = (request, response) => {
     const receipt_number = request.params.receipt_number
@@ -89,10 +91,15 @@ const getAllByPeriod = (request, response) => {
         end
     } = request.body
     if (!begin || !end) {
-        response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
+        return response.status(400).json({message: "Bad Request: begin date and end date are mandatory"})
     }
-    const query = 'SELECT receipt.receipt_number, product_name, products_number, sp.selling_price  FROM receipt INNER JOIN sale ON sale.receipt_number = receipt.receipt_number INNER JOIN store_product sp ON sp.upc = sale.upc INNER JOIN product ON product.id_product = sp.id_product WHERE print_date > $1 AND print_date < $2 ORDER BY product_name ASC'
-    console.log(query)
+    const query = `
+        SELECT R.receipt_number, R.id_employee, E.empl_name, R.card_number, R.print_date, R.sum_total, R.vat
+        FROM receipt R
+                 INNER JOIN employee E on R.id_employee = E.id_employee
+        WHERE print_date > $1
+          AND print_date < $2
+        ORDER BY print_date DESC`
     pool.query(query,
         [begin, end], (error, results) => {
             if (error) {
@@ -101,7 +108,6 @@ const getAllByPeriod = (request, response) => {
             } else {
                 response.status(200).json(results.rows)
             }
-
         })
 }
 
@@ -130,42 +136,38 @@ const getCountByPeriod = (request, response) => {
 }
 
 const create = async (request, response) => {
-    let card_number = request.body.card_number
-    let percent
-    const {
-        receipt_number,
-        id_employee,
-        date,
-    } = request.body
-    card_number = card_number ?? null
-    if (card_number) {
-        percent = await getPercentByCustomer(card_number)
-    }
-    if (!receipt_number || !id_employee || !date) {
-        response.status(400).json({message: "Bad Request: number, id_employee, date are mandatory"})
-    }
-    const vat = 0
-    pool.query('INSERT INTO receipt (receipt_number, id_employee, card_number, print_date, sum_total, vat) VALUES ($1, $2, $3, $4, $5, $6)',
-        [receipt_number, id_employee, card_number, date, 0, vat], (error, results) => {
-            if (error) {
-                console.log(error.message)
-                response.status(500).json({message: error.message})
-            }
-            response.status(201).send(`Receipt added with number: ${receipt_number}`)
-        })
-}
+    const {receipt, employeeId} = request.body;
+    let cardNumber = request.body.cardNumber;
+    cardNumber = cardNumber ?? null;
 
-const getPercentByCustomer = async (card_number) => {
-    const query = 'SELECT percent FROM customer_card WHERE card_number = $1'
-    const result = await pool.query(query, [card_number]);
-    return result.rows[0].percent
-}
+    if (!validateSales(receipt) || !employeeId) {
+        return response.status(400).json({message: 'Bad params: employeeId is mandatory and receipt must be and array, each element having upc, count and price'})
+    }
 
-const getSumByNumber = async (receipt_number) => {
-    const query = 'SELECT SUM(selling_price) FROM sale WHERE receipt_number = $1'
-    const result = await pool.query(query, [receipt_number]);
-    console.log(result.rows[0])
-    return result.rows[0];
+    const receiptNumber = await getNextAvailableReceiptNumber();
+    const printDate = new Date().toISOString();
+    let pricesSum = sumPricesInReceipt(receipt);
+    if (cardNumber) {
+        const discountPercentage = (await getDiscountPercentageByCardNumber(cardNumber)) ?? 0;
+        pricesSum = pricesSum * (1 - discountPercentage / 100);
+    }
+    const vat = pricesSum * 0.25;
+
+    const result = await pool.query('INSERT INTO receipt (receipt_number, id_employee, card_number, print_date, sum_total, vat) VALUES ($1, $2, $3, $4, $5, $6)',
+        [receiptNumber, employeeId, cardNumber, printDate, pricesSum + vat, vat])
+
+    if (!result.rowCount) {
+        return response.status(500).json({message: 'Failed to create a receipt'})
+    }
+
+    for (let sale of receipt) {
+        const result = await createSaleRecord(receiptNumber, sale.upc, sale.count, sale.price);
+        if (!result) {
+            return response.status(500).json({message: 'Failed to create one of sale records'})
+        }
+    }
+
+    response.status(201).json({message: `Receipt added with number: ${receiptNumber}`})
 }
 
 const deleteById = (request, response) => {
@@ -180,6 +182,25 @@ const deleteById = (request, response) => {
         }
         response.status(200).send(`Receipt deleted with number: ${receipt_number}`)
     })
+}
+
+const getNextAvailableReceiptNumber = async () => {
+    const query = `
+        SELECT receipt_number
+        FROM receipt
+        ORDER BY receipt_number DESC
+        LIMIT 1`
+    const topNumberString = (await pool.query(query)).rows[0].receipt_number;
+    const topNumber = topNumberString ? parseInt(topNumberString) : 0;
+    return `${topNumber + 1}`.padStart(10, '0');
+}
+
+sumPricesInReceipt = (receipt) => {
+    let total = 0;
+    for (let sale of receipt) {
+        total += sale.price * sale.count;
+    }
+    return total;
 }
 
 module.exports = {
