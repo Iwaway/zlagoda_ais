@@ -34,7 +34,59 @@ const getLessByNumber = async (request, response) => {
     })
 }
 
+const getCountAndSumByCustomer = async (request, response) => {
+    const query = `
+    SELECT customer_card.cust_name, customer_card.cust_surname, COUNT(receipt.receipt_number) AS num_purchases, SUM(receipt.sum_total) AS total_spent
+    FROM customer_card
+        JOIN receipt ON customer_card.card_number = receipt.card_number
+    GROUP BY customer_card.card_number
+    ORDER BY total_spent DESC;
+     `
+    await pool.query(query, (error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
+        }
+    })
+}
+
+const getCustomersForPromotion = async (request, response) => {
+    const {
+        sum,
+        city
+    } = request.body
+    if (!sum || !city) {
+        console.log(error.message)
+        response.status(400).send('Bad Params: sum and city are mandatory')
+    }
+    const query = `
+    SELECT cust_name, cust_surname
+    FROM customer_card
+    WHERE card_number NOT IN (
+        SELECT card_number
+        FROM receipt
+        WHERE sum_total < $1
+        AND id_employee NOT IN (
+            SELECT id_employee
+            FROM employee
+            WHERE city <> $2
+        )
+    ); `
+    await pool.query(query, [sum, city], (error, results) => {
+        if (error) {
+            console.log(error.message)
+            response.status(500).json({message: error.message})
+        } else {
+            response.status(200).json(results.rows)
+        }
+    })
+}
+
 module.exports = {
     getCountGroupingByReceipt,
     getLessByNumber,
+    getCountAndSumByCustomer,
+    getCustomersForPromotion,
 }

@@ -149,6 +149,8 @@ routes.post(API_ROOT + '/register', auth.register);
 
 routes.get(API_ROOT + '/getCountByReceipt', query.getCountGroupingByReceipt)
 routes.get(API_ROOT + '/getLessByNumber/:number', query.getLessByNumber)
+routes.get(API_ROOT + '/getCountAndSumByCustomer', query.getCountAndSumByCustomer)
+routes.get(API_ROOT + '/getCustomersForPromotion', query.getCustomersForPromotion)
 
 module.exports = routes;
 
